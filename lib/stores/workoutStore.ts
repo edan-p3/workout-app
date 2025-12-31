@@ -35,6 +35,7 @@ export type WorkoutState = {
   history: CompletedWorkout[]
   startWorkout: (name?: string) => void
   addExercise: (exercise: Omit<Exercise, 'sets'>) => void
+  removeExercise: (exerciseId: string) => void
   addSet: (exerciseId: string) => void
   updateSet: (exerciseId: string, setId: string, updates: Partial<Set>) => void
   completeSet: (exerciseId: string, setId: string) => void
@@ -63,6 +64,15 @@ export const useWorkoutStore = create<WorkoutState>()(
               ...state.activeWorkout.exercises,
               { ...exercise, sets: [{ id: crypto.randomUUID(), weight: 0, reps: 0, completed: false }] }
             ]
+          }
+        }
+      }),
+      removeExercise: (exerciseId) => set((state) => {
+        if (!state.activeWorkout) return state
+        return {
+          activeWorkout: {
+            ...state.activeWorkout,
+            exercises: state.activeWorkout.exercises.filter(ex => ex.id !== exerciseId)
           }
         }
       }),

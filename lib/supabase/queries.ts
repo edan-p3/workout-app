@@ -44,7 +44,7 @@ export const workoutQueries = {
   async createWorkout(workout: Tables['workouts']['Insert']) {
     return await supabase
       .from('workouts')
-      .insert(workout)
+      .insert(workout as any)
       .select()
       .single()
   },
@@ -53,7 +53,7 @@ export const workoutQueries = {
   async updateWorkout(workoutId: string, updates: Tables['workouts']['Update']) {
     return await supabase
       .from('workouts')
-      .update(updates)
+      .update(updates as any)
       .eq('id', workoutId)
       .select()
       .single()
@@ -130,7 +130,7 @@ export const exerciseQueries = {
   async createExercise(exercise: Tables['exercises']['Insert']) {
     return await supabase
       .from('exercises')
-      .insert(exercise)
+      .insert(exercise as any)
       .select()
       .single()
   },
@@ -139,7 +139,7 @@ export const exerciseQueries = {
   async updateExercise(exerciseId: string, updates: Tables['exercises']['Update']) {
     return await supabase
       .from('exercises')
-      .update(updates)
+      .update(updates as any)
       .eq('id', exerciseId)
       .select()
       .single()
@@ -195,7 +195,7 @@ export const setQueries = {
   async createSet(set: Tables['exercise_sets']['Insert']) {
     return await supabase
       .from('exercise_sets')
-      .insert(set)
+      .insert(set as any)
       .select()
       .single()
   },
@@ -204,7 +204,7 @@ export const setQueries = {
   async updateSet(setId: string, updates: Tables['exercise_sets']['Update']) {
     return await supabase
       .from('exercise_sets')
-      .update(updates)
+      .update(updates as any)
       .eq('id', setId)
       .select()
       .single()
@@ -257,7 +257,7 @@ export const bodyWeightQueries = {
   async createWeightLog(log: Tables['body_weight_logs']['Insert']) {
     return await supabase
       .from('body_weight_logs')
-      .insert(log)
+      .insert(log as any)
       .select()
       .single()
   },
@@ -266,7 +266,7 @@ export const bodyWeightQueries = {
   async updateWeightLog(logId: string, updates: Tables['body_weight_logs']['Update']) {
     return await supabase
       .from('body_weight_logs')
-      .update(updates)
+      .update(updates as any)
       .eq('id', logId)
       .select()
       .single()
@@ -339,7 +339,7 @@ export const gamificationQueries = {
   async updateGamificationData(userId: string, updates: Tables['gamification_data']['Update']) {
     return await supabase
       .from('gamification_data')
-      .update(updates)
+      .update(updates as any)
       .eq('user_id', userId)
       .select()
       .single()
@@ -380,7 +380,7 @@ export const programQueries = {
   async createProgram(program: Tables['workout_programs']['Insert']) {
     return await supabase
       .from('workout_programs')
-      .insert(program)
+      .insert(program as any)
       .select()
       .single()
   },
@@ -389,7 +389,7 @@ export const programQueries = {
   async updateProgram(programId: string, updates: Tables['workout_programs']['Update']) {
     return await supabase
       .from('workout_programs')
-      .update(updates)
+      .update(updates as any)
       .eq('id', programId)
       .select()
       .single()
@@ -408,13 +408,13 @@ export const programQueries = {
     // First, deactivate all programs
     await supabase
       .from('workout_programs')
-      .update({ is_active: false })
+      .update({ is_active: false } as any)
       .eq('user_id', userId)
 
     // Then activate the selected program
     return await supabase
       .from('workout_programs')
-      .update({ is_active: true })
+      .update({ is_active: true } as any)
       .eq('id', programId)
       .select()
       .single()
@@ -424,7 +424,7 @@ export const programQueries = {
   async createProgramDay(programDay: Tables['program_days']['Insert']) {
     return await supabase
       .from('program_days')
-      .insert(programDay)
+      .insert(programDay as any)
       .select()
       .single()
   },
@@ -433,7 +433,7 @@ export const programQueries = {
   async updateProgramDay(dayId: string, updates: Tables['program_days']['Update']) {
     return await supabase
       .from('program_days')
-      .update(updates)
+      .update(updates as any)
       .eq('id', dayId)
       .select()
       .single()
@@ -492,7 +492,7 @@ export const exerciseLibraryQueries = {
   async createCustomExercise(exercise: Tables['exercise_library']['Insert']) {
     return await supabase
       .from('exercise_library')
-      .insert(exercise)
+      .insert(exercise as any)
       .select()
       .single()
   },
@@ -501,7 +501,7 @@ export const exerciseLibraryQueries = {
   async updateCustomExercise(exerciseId: string, updates: Tables['exercise_library']['Update']) {
     return await supabase
       .from('exercise_library')
-      .update(updates)
+      .update(updates as any)
       .eq('id', exerciseId)
       .select()
       .single()
@@ -545,7 +545,7 @@ export const readinessQueries = {
   async createReadinessLog(log: Tables['readiness_logs']['Insert']) {
     return await supabase
       .from('readiness_logs')
-      .insert(log)
+      .insert(log as any)
       .select()
       .single()
   },
@@ -554,7 +554,7 @@ export const readinessQueries = {
   async updateReadinessLog(logId: string, updates: Tables['readiness_logs']['Update']) {
     return await supabase
       .from('readiness_logs')
-      .update(updates)
+      .update(updates as any)
       .eq('id', logId)
       .select()
       .single()
@@ -607,7 +607,7 @@ export const userQueries = {
   async updateUserSettings(userId: string, settings: Record<string, any>) {
     return await supabase
       .from('users')
-      .update({ settings })
+      .update({ settings } as any)
       .eq('id', userId)
       .select()
       .single()

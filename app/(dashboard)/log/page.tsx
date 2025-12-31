@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation"
 
 export default function LogWorkoutPage() {
   const router = useRouter()
-  const { activeWorkout, startWorkout, addExercise, addSet, finishWorkout } = useWorkoutStore()
+  const { activeWorkout, startWorkout, addExercise, removeExercise, addSet, finishWorkout } = useWorkoutStore()
   const [isClient, setIsClient] = useState(false)
   const [showExerciseSelector, setShowExerciseSelector] = useState(false)
 
@@ -71,7 +71,11 @@ export default function LogWorkoutPage() {
                             </span>
                         )}
                     </div>
-                    <button className="text-text-muted hover:text-white transition-colors text-xl leading-none px-2">
+                    <button 
+                      onClick={() => removeExercise(exercise.id)}
+                      className="text-text-muted hover:text-error transition-colors text-xl leading-none px-2"
+                      aria-label="Remove exercise"
+                    >
                         &times;
                     </button>
                     </div>

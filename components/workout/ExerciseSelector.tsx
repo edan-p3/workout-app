@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog } from "@/components/ui/Dialog" // We'll need to create a simple Dialog/Modal or just use absolute positioning for now
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Card } from "@/components/ui/Card"
@@ -26,11 +25,11 @@ export function ExerciseSelector({ onSelect, onCancel }: ExerciseSelectorProps) 
   })
 
   return (
-    <div className="fixed inset-0 z-50 bg-bg-primary flex flex-col animate-in slide-in-from-bottom-10 duration-300">
-      <div className="p-4 border-b border-white/10 space-y-4 bg-bg-primary/95 backdrop-blur">
+    <div className="fixed inset-0 z-50 bg-bg-primary flex flex-col animate-in slide-in-from-bottom-10 duration-300 safe-area-padding">
+      <div className="p-4 border-b border-white/10 space-y-4 bg-bg-primary sticky top-0 z-10">
         <div className="flex items-center justify-between">
             <h2 className="text-xl font-heading font-bold text-white">Add Exercise</h2>
-            <Button variant="ghost" onClick={onCancel} className="text-text-muted">Cancel</Button>
+            <Button variant="ghost" onClick={onCancel} className="text-text-muted -mr-2">Cancel</Button>
         </div>
         
         <div className="relative">
@@ -75,26 +74,32 @@ export function ExerciseSelector({ onSelect, onCancel }: ExerciseSelectorProps) 
 
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {filteredExercises.map(ex => (
-            <Card 
+            <button
                 key={ex.id} 
                 onClick={() => onSelect(ex.name, ex.category)}
-                className="p-4 flex items-center justify-between hover:bg-white/5 cursor-pointer active:scale-[0.99] transition-all bg-transparent border-white/5"
+                className="w-full p-4 flex items-center justify-between bg-bg-card/50 border border-white/5 rounded-xl active:scale-[0.98] transition-transform text-left touch-manipulation"
             >
                 <span className="font-medium text-white">{ex.name}</span>
-                <Plus className="w-4 h-4 text-text-muted" />
-            </Card>
+                <Plus className="w-5 h-5 text-primary flex-shrink-0" />
+            </button>
         ))}
 
         {filteredExercises.length === 0 && search && (
-            <div className="text-center py-8">
+            <div className="text-center py-8 px-4">
                 <p className="text-text-muted mb-4">No exercises found.</p>
                 <Button 
                     variant="secondary" 
                     className="w-full"
                     onClick={() => onSelect(search, "Other")}
                 >
+                    <Plus className="w-4 h-4 mr-2" />
                     Create "{search}"
                 </Button>
+            </div>
+        )}
+        {filteredExercises.length === 0 && !search && (
+            <div className="text-center py-8 text-text-muted">
+                Select a category or search for an exercise
             </div>
         )}
       </div>
