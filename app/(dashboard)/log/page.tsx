@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
-import { Plus, Timer, ChevronRight, CheckCircle2, ChevronDown, ChevronUp, Info } from "lucide-react"
+import { Plus, Timer, ChevronRight, CheckCircle2, ChevronDown, ChevronUp, Info, Music } from "lucide-react"
 import { SetLogger } from "@/components/workout/SetLogger"
 import { calculateVolume } from "@/lib/utils/calculations"
 import { cn } from "@/lib/utils/cn"
@@ -20,6 +20,7 @@ export default function LogWorkoutPage() {
   const [showExerciseSelector, setShowExerciseSelector] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null)
+  const [showMusicTip, setShowMusicTip] = useState(true)
 
   useEffect(() => {
     setIsClient(true)
@@ -76,6 +77,41 @@ export default function LogWorkoutPage() {
                 </Button>
             </div>
         </div>
+
+        {/* Music Controls */}
+        {showMusicTip && (
+          <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/30">
+            <div className="flex items-start gap-3">
+              <Music className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <h3 className="font-bold text-white text-sm">Workout Music 🎵</h3>
+                <p className="text-xs text-text-secondary">
+                  Open your music app and use your device controls to play, pause, skip tracks, and adjust volume during your workout.
+                </p>
+                <div className="flex gap-2">
+                  <a 
+                    href="spotify:" 
+                    className="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
+                  >
+                    Open Spotify
+                  </a>
+                  <a 
+                    href="music:" 
+                    className="text-xs bg-primary hover:bg-primary/80 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
+                  >
+                    Open Apple Music
+                  </a>
+                  <button 
+                    onClick={() => setShowMusicTip(false)}
+                    className="text-xs text-text-muted hover:text-white ml-auto"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Exercises List */}
         <div className="space-y-4">
