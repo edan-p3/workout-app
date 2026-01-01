@@ -94,16 +94,21 @@ export default function ProfilePage() {
 
         const actualWorkoutCount = workouts?.length || 0
         
-        // If stats are out of sync, fix them automatically
-        if (gamData.total_workouts !== actualWorkoutCount) {
-          console.log(`Stats out of sync. Database: ${actualWorkoutCount}, Gamification: ${gamData.total_workouts}. Syncing...`)
+        // Check if ANY stats need syncing
+        const needsSync = 
+          gamData.total_workouts !== actualWorkoutCount || 
+          (actualWorkoutCount === 0 && gamData.current_streak !== 0) ||
+          gamData.total_points !== (actualWorkoutCount * 100)
+        
+        if (needsSync) {
+          console.log(`Stats out of sync. Database: ${actualWorkoutCount}, Gamification: ${gamData.total_workouts}, Streak: ${gamData.current_streak}. Syncing...`)
           
           const { data: updatedGam, error: updateError } = await supabase
             .from('gamification_data')
             .update({
               total_workouts: actualWorkoutCount,
               total_points: actualWorkoutCount * 100,
-              current_streak: actualWorkoutCount > 0 ? gamData.current_streak : 0, // Reset streak if no workouts
+              current_streak: actualWorkoutCount > 0 ? gamData.current_streak : 0,
               updated_at: new Date().toISOString()
             })
             .eq('user_id', currentUser.id)
