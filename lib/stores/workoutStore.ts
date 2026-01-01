@@ -6,6 +6,7 @@ export type Set = {
   id: string
   weight: number
   reps: number
+  duration: number  // in minutes
   completed: boolean
 }
 
@@ -62,7 +63,7 @@ export const useWorkoutStore = create<WorkoutState>()(
             ...state.activeWorkout,
             exercises: [
               ...state.activeWorkout.exercises,
-              { ...exercise, sets: [{ id: crypto.randomUUID(), weight: 0, reps: 0, completed: false }] }
+              { ...exercise, sets: [{ id: crypto.randomUUID(), weight: 0, reps: 0, duration: 0, completed: false }] }
             ]
           }
         }
@@ -91,7 +92,8 @@ export const useWorkoutStore = create<WorkoutState>()(
                   { 
                     id: crypto.randomUUID(), 
                     weight: previousSet ? previousSet.weight : 0, 
-                    reps: previousSet ? previousSet.reps : 0, 
+                    reps: previousSet ? previousSet.reps : 0,
+                    duration: previousSet ? previousSet.duration : 0,
                     completed: false 
                   }
                 ]

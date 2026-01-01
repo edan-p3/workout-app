@@ -96,19 +96,29 @@ export default function LogWorkoutPage() {
                     </div>
 
                     <div className="space-y-2">
-                    <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-3 text-xs text-text-muted uppercase tracking-wider text-center px-1">
+                    {/* Dynamic column headers based on exercise type */}
+                    {exercise.bodyPart && ['Cardio', 'Sports'].includes(exercise.bodyPart) ? (
+                      <div className="grid grid-cols-[2rem_1fr_2.5rem] gap-3 text-xs text-text-muted uppercase tracking-wider text-center px-1">
+                        <span className="pt-2">Set</span>
+                        <span className="pt-2">Minutes</span>
+                        <span className="text-center pt-2"><CheckCircle2 className="w-4 h-4 mx-auto" /></span>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-3 text-xs text-text-muted uppercase tracking-wider text-center px-1">
                         <span className="pt-2">Set</span>
                         <span className="pt-2">Lbs</span>
                         <span className="pt-2">Reps</span>
                         <span className="text-center pt-2"><CheckCircle2 className="w-4 h-4 mx-auto" /></span>
-                    </div>
+                      </div>
+                    )}
                     
                     {exercise.sets.map((set, index) => (
                         <SetLogger 
                             key={set.id} 
                             exerciseId={exercise.id} 
                             set={set} 
-                            index={index} 
+                            index={index}
+                            exerciseCategory={exercise.bodyPart}
                         />
                     ))}
                     </div>
