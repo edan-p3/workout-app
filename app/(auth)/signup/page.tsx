@@ -48,35 +48,7 @@ export default function SignupPage() {
       if (authError) throw authError
 
       if (authData.user) {
-        // Create user profile with default settings
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            email: authData.user.email!,
-            settings: {
-              units: 'lbs',
-              restTimer: 90,
-              theme: 'dark',
-              full_name: fullName,
-            },
-          })
-
-        if (profileError) throw profileError
-
-        // Initialize gamification data
-        const { error: gamificationError } = await supabase
-          .from('gamification_data')
-          .insert({
-            user_id: authData.user.id,
-            total_points: 0,
-            current_streak: 0,
-            longest_streak: 0,
-            total_workouts: 0,
-          })
-
-        if (gamificationError) throw gamificationError
-
+        // User profile and gamification data are automatically created by database trigger
         // Redirect to dashboard
         router.push("/")
         router.refresh()

@@ -322,7 +322,7 @@ CREATE OR REPLACE FUNCTION update_workout_streak(user_uuid uuid)
 RETURNS void AS $$
 DECLARE
   streak_count integer := 0;
-  current_date date := CURRENT_DATE;
+  check_date date := CURRENT_DATE;
   prev_workout_date date;
   workout_dates date[];
 BEGIN
@@ -336,9 +336,9 @@ BEGIN
   IF array_length(workout_dates, 1) > 0 THEN
     FOREACH prev_workout_date IN ARRAY workout_dates LOOP
       -- Allow 1-2 rest days without breaking streak
-      IF (current_date - prev_workout_date) <= 2 THEN
+      IF (check_date - prev_workout_date) <= 2 THEN
         streak_count := streak_count + 1;
-        current_date := prev_workout_date;
+        check_date := prev_workout_date;
       ELSE
         EXIT;
       END IF;
