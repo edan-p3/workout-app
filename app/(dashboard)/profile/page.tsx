@@ -84,11 +84,46 @@ export default function ProfilePage() {
         console.error('Error loading gamification data:', gamError)
       } else if (gamData) {
         console.log('Loaded gamification data:', gamData)
-        setGamification({
-          total_workouts: gamData.total_workouts,
-          current_streak: gamData.current_streak,
-          total_points: gamData.total_points,
-        })
+        
+        // Auto-sync: Check if stats match actual workout count
+        const { data: workouts, error: workoutError } = await supabase
+          .from('workouts')
+          .select('id')
+          .eq('user_id', currentUser.id)
+          .eq('is_completed', true)
+
+        const actualWorkoutCount = workouts?.length || 0
+        
+        // If stats are out of sync, fix them automatically
+        if (gamData.total_workouts !== actualWorkoutCount) {
+          console.log(`Stats out of sync. Database: ${actualWorkoutCount}, Gamification: ${gamData.total_workouts}. Syncing...`)
+          
+          const { data: updatedGam, error: updateError } = await supabase
+            .from('gamification_data')
+            .update({
+              total_workouts: actualWorkoutCount,
+              total_points: actualWorkoutCount * 100,
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', currentUser.id)
+            .select()
+            .single()
+
+          if (!updateError && updatedGam) {
+            console.log('Stats synced successfully:', updatedGam)
+            setGamification({
+              total_workouts: updatedGam.total_workouts,
+              current_streak: updatedGam.current_streak,
+              total_points: updatedGam.total_points,
+            })
+          }
+        } else {
+          setGamification({
+            total_workouts: gamData.total_workouts,
+            current_streak: gamData.current_streak,
+            total_points: gamData.total_points,
+          })
+        }
       }
     } catch (error) {
       console.error('Error loading user data:', error)
