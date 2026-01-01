@@ -64,10 +64,10 @@ export default function DashboardPage() {
       {showTooltip === type && (
         <>
           <div 
-            className="fixed inset-0 z-40" 
+            className="fixed inset-0 z-[70]" 
             onClick={() => setShowTooltip(null)}
           />
-          <div className="absolute left-0 top-full mt-2 z-50 w-56 px-4 py-3 bg-white rounded-xl shadow-2xl text-xs text-primary font-medium leading-relaxed animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute left-0 top-full mt-2 z-[80] w-56 px-4 py-3 bg-white rounded-xl shadow-2xl text-xs text-primary font-medium leading-relaxed animate-in fade-in zoom-in-95 duration-200 opacity-100">
             <div className="absolute -top-1.5 left-4 w-3 h-3 bg-white rotate-45"></div>
             {tooltips[type]}
           </div>
