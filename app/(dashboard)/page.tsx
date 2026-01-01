@@ -51,7 +51,11 @@ export default function DashboardPage() {
   const InfoIcon = ({ type }: { type: keyof typeof tooltips }) => (
     <div className="relative inline-block">
       <button
-        onClick={() => setShowTooltip(showTooltip === type ? null : type)}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setShowTooltip(showTooltip === type ? null : type)
+        }}
         className="ml-1 text-text-muted hover:text-primary transition-colors"
         aria-label="More information"
       >
