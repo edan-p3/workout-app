@@ -42,6 +42,7 @@ export default function DashboardPage() {
       <button
         onClick={() => setShowTooltip(showTooltip === type ? null : type)}
         className="ml-1 text-text-muted hover:text-primary transition-colors"
+        aria-label="More information"
       >
         <HelpCircle className="w-3 h-3" />
       </button>
@@ -51,7 +52,8 @@ export default function DashboardPage() {
             className="fixed inset-0 z-40" 
             onClick={() => setShowTooltip(null)}
           />
-          <div className="absolute left-0 top-full mt-1 z-50 w-48 p-2 bg-bg-card border border-primary/20 rounded-lg shadow-lg text-xs text-white animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute left-0 top-full mt-2 z-50 w-56 px-3 py-2.5 bg-gray-900 border border-primary/30 rounded-lg shadow-2xl text-xs text-white leading-relaxed animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute -top-1 left-3 w-2 h-2 bg-gray-900 border-l border-t border-primary/30 rotate-45"></div>
             {tooltips[type]}
           </div>
         </>
