@@ -9,7 +9,7 @@ import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
 
 export default function DashboardPage() {
-  const { history, deleteWorkout } = useWorkoutStore()
+  const { history, deleteWorkout, loadWorkoutsFromDatabase } = useWorkoutStore()
   const [isClient, setIsClient] = useState(false)
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
   const [selectedWorkout, setSelectedWorkout] = useState<any>(null)
@@ -17,6 +17,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsClient(true)
+    // Load workouts from database
+    loadWorkoutsFromDatabase()
   }, [])
 
   if (!isClient) return null
