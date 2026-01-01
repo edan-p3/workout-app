@@ -97,20 +97,41 @@ export default function LogWorkoutPage() {
 
                     <div className="space-y-2">
                     {/* Dynamic column headers based on exercise type */}
-                    {exercise.bodyPart && ['Cardio', 'Sports'].includes(exercise.bodyPart) ? (
-                      <div className="grid grid-cols-[2rem_1fr_2.5rem] gap-3 text-xs text-text-muted uppercase tracking-wider text-center px-1">
-                        <span className="pt-2">Set</span>
-                        <span className="pt-2">Minutes</span>
-                        <span className="text-center pt-2"><CheckCircle2 className="w-4 h-4 mx-auto" /></span>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-3 text-xs text-text-muted uppercase tracking-wider text-center px-1">
-                        <span className="pt-2">Set</span>
-                        <span className="pt-2">Lbs</span>
-                        <span className="pt-2">Reps</span>
-                        <span className="text-center pt-2"><CheckCircle2 className="w-4 h-4 mx-auto" /></span>
-                      </div>
-                    )}
+                    {(() => {
+                      const cardioMachines = ['treadmill', 'elliptical', 'cycling', 'rowing', 'stairmaster', 'bike']
+                      const isCardioMachine = exercise.name && cardioMachines.some(machine => 
+                        exercise.name.toLowerCase().includes(machine)
+                      )
+                      
+                      if (isCardioMachine) {
+                        return (
+                          <div className="grid grid-cols-[2rem_1fr_1fr_1fr_2.5rem] gap-2 text-xs text-text-muted uppercase tracking-wider text-center px-1">
+                            <span className="pt-2">Set</span>
+                            <span className="pt-2">Distance</span>
+                            <span className="pt-2">Time</span>
+                            <span className="pt-2">Calories</span>
+                            <span className="text-center pt-2"><CheckCircle2 className="w-4 h-4 mx-auto" /></span>
+                          </div>
+                        )
+                      } else if (exercise.bodyPart && ['Cardio', 'Sports'].includes(exercise.bodyPart)) {
+                        return (
+                          <div className="grid grid-cols-[2rem_1fr_2.5rem] gap-3 text-xs text-text-muted uppercase tracking-wider text-center px-1">
+                            <span className="pt-2">Set</span>
+                            <span className="pt-2">Minutes</span>
+                            <span className="text-center pt-2"><CheckCircle2 className="w-4 h-4 mx-auto" /></span>
+                          </div>
+                        )
+                      } else {
+                        return (
+                          <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem] gap-3 text-xs text-text-muted uppercase tracking-wider text-center px-1">
+                            <span className="pt-2">Set</span>
+                            <span className="pt-2">Lbs</span>
+                            <span className="pt-2">Reps</span>
+                            <span className="text-center pt-2"><CheckCircle2 className="w-4 h-4 mx-auto" /></span>
+                          </div>
+                        )
+                      }
+                    })()}
                     
                     {exercise.sets.map((set, index) => (
                         <SetLogger 
@@ -119,6 +140,7 @@ export default function LogWorkoutPage() {
                             set={set} 
                             index={index}
                             exerciseCategory={exercise.bodyPart}
+                            exerciseName={exercise.name}
                         />
                     ))}
                     </div>
