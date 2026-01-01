@@ -23,6 +23,7 @@ export default function DashboardPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<WorkoutTemplate | null>(null)
   const [showAllTemplates, setShowAllTemplates] = useState(false)
   const [expandedExercise, setExpandedExercise] = useState<number | null>(null)
+  const [selectedDifficulty, setSelectedDifficulty] = useState<WorkoutTemplate['difficulty'] | null>(null)
 
   useEffect(() => {
     setIsClient(true)
@@ -233,69 +234,106 @@ export default function DashboardPage() {
         </div>
         <p className="text-text-muted text-sm mb-4">Your personal trainer, anytime 💪</p>
         
-        {/* Group templates by difficulty */}
-        {['Beginner', 'Intermediate', 'Advanced'].map((difficulty) => {
-          const templates = WORKOUT_TEMPLATES.filter(t => t.difficulty === difficulty)
-          if (templates.length === 0) return null
-          
-          const shouldShow = showAllTemplates || difficulty === 'Beginner'
-          if (!shouldShow) return null
-          
-          return (
-            <div key={difficulty} className="space-y-3 mb-6">
-              <h3 className="text-sm font-bold text-text-muted uppercase tracking-wider flex items-center gap-2">
-                {difficulty === 'Beginner' && '🌱'}
-                {difficulty === 'Intermediate' && '💪'}
-                {difficulty === 'Advanced' && '🔥'}
-                {difficulty}
-              </h3>
-              <div className="grid grid-cols-1 gap-3">
-                {templates.map((template) => (
-                  <Card 
-                    key={template.id}
-                    onClick={() => setSelectedTemplate(template)}
-                    className="p-4 hover:border-primary/50 transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-white group-hover:text-primary transition-colors">{template.name}</h3>
-                          <span className={`text-xs px-2 py-0.5 rounded ${getDifficultyColor(template.difficulty)}`}>
-                            {template.difficulty}
-                          </span>
-                        </div>
-                        <p className="text-xs text-text-muted mb-2">{template.description}</p>
-                        <div className="flex items-center gap-3 text-xs text-text-secondary">
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {template.duration}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Target className="w-3 h-3" />
-                            {template.exercises.length} exercises
-                          </span>
-                        </div>
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
-                    </div>
-                  </Card>
-                ))}
+        {/* Difficulty Selector or Workouts */}
+        {!selectedDifficulty ? (
+          /* Difficulty Selection Screen */
+          <div className="space-y-3">
+            <p className="text-xs text-text-muted text-center mb-4">Choose your fitness level to see tailored workouts</p>
+            
+            <Card 
+              onClick={() => setSelectedDifficulty('Beginner')}
+              className="p-5 hover:border-green-400/50 transition-all cursor-pointer group bg-gradient-to-r from-green-500/5 to-green-500/10"
+            >
+              <div className="flex items-start gap-3">
+                <div className="text-3xl">🌱</div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-white text-lg mb-1 group-hover:text-green-400 transition-colors">Beginner</h3>
+                  <p className="text-xs text-text-secondary mb-2">New to working out or returning after a break. Focus on learning proper form and building a foundation.</p>
+                  <p className="text-xs text-green-400 font-medium">{WORKOUT_TEMPLATES.filter(t => t.difficulty === 'Beginner').length} workouts available</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-text-muted group-hover:text-green-400 transition-colors" />
+              </div>
+            </Card>
+            
+            <Card 
+              onClick={() => setSelectedDifficulty('Intermediate')}
+              className="p-5 hover:border-yellow-400/50 transition-all cursor-pointer group bg-gradient-to-r from-yellow-500/5 to-yellow-500/10"
+            >
+              <div className="flex items-start gap-3">
+                <div className="text-3xl">💪</div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-white text-lg mb-1 group-hover:text-yellow-400 transition-colors">Intermediate</h3>
+                  <p className="text-xs text-text-secondary mb-2">Comfortable with basics. Ready for more volume, varied exercises, and progressive overload.</p>
+                  <p className="text-xs text-yellow-400 font-medium">{WORKOUT_TEMPLATES.filter(t => t.difficulty === 'Intermediate').length} workouts available</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-text-muted group-hover:text-yellow-400 transition-colors" />
+              </div>
+            </Card>
+            
+            <Card 
+              onClick={() => setSelectedDifficulty('Advanced')}
+              className="p-5 hover:border-red-400/50 transition-all cursor-pointer group bg-gradient-to-r from-red-500/5 to-red-500/10"
+            >
+              <div className="flex items-start gap-3">
+                <div className="text-3xl">🔥</div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-white text-lg mb-1 group-hover:text-red-400 transition-colors">Advanced</h3>
+                  <p className="text-xs text-text-secondary mb-2">Experienced lifter. High volume, intensity, and complex programming for serious athletes.</p>
+                  <p className="text-xs text-red-400 font-medium">{WORKOUT_TEMPLATES.filter(t => t.difficulty === 'Advanced').length} workouts available</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-text-muted group-hover:text-red-400 transition-colors" />
+              </div>
+            </Card>
+          </div>
+        ) : (
+          /* Show Workouts for Selected Difficulty */
+          <div className="space-y-3">
+            <div className="flex items-center justify-between mb-3">
+              <button 
+                onClick={() => setSelectedDifficulty(null)}
+                className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
+              >
+                ← Change Level
+              </button>
+              <div className="flex items-center gap-2">
+                {selectedDifficulty === 'Beginner' && <span className="text-lg">🌱</span>}
+                {selectedDifficulty === 'Intermediate' && <span className="text-lg">💪</span>}
+                {selectedDifficulty === 'Advanced' && <span className="text-lg">🔥</span>}
+                <span className={`text-xs px-2 py-1 rounded ${getDifficultyColor(selectedDifficulty)}`}>
+                  {selectedDifficulty}
+                </span>
               </div>
             </div>
-          )
-        })}
-        
-        <Button 
-          variant="ghost" 
-          className="w-full mt-3 text-primary hover:bg-primary/10"
-          onClick={() => setShowAllTemplates(!showAllTemplates)}
-        >
-          {showAllTemplates ? (
-            <>Show Less</>
-          ) : (
-            <>Show All Levels</>
-          )}
-        </Button>
+            
+            <div className="grid grid-cols-1 gap-3">
+              {WORKOUT_TEMPLATES.filter(t => t.difficulty === selectedDifficulty).map((template) => (
+                <Card 
+                  key={template.id}
+                  onClick={() => setSelectedTemplate(template)}
+                  className="p-4 hover:border-primary/50 transition-all cursor-pointer group"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-white group-hover:text-primary transition-colors mb-1">{template.name}</h3>
+                      <p className="text-xs text-text-muted mb-2">{template.description}</p>
+                      <div className="flex items-center gap-3 text-xs text-text-secondary">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {template.duration}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Target className="w-3 h-3" />
+                          {template.exercises.length} exercises
+                        </span>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Recent Activity */}
