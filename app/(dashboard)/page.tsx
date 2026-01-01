@@ -4,18 +4,22 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
-import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2 } from "lucide-react"
+import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { useWeightStore } from "@/lib/stores/weightStore"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
+import { WORKOUT_TEMPLATES, type WorkoutTemplate } from "@/lib/data/workoutTemplates"
+import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
-  const { history, deleteWorkout, loadWorkoutsFromDatabase } = useWorkoutStore()
+  const router = useRouter()
+  const { history, deleteWorkout, loadWorkoutsFromDatabase, startWorkout, addExercise } = useWorkoutStore()
   const { getLatestWeight, entries } = useWeightStore()
   const [isClient, setIsClient] = useState(false)
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
   const [selectedWorkout, setSelectedWorkout] = useState<any>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<WorkoutTemplate | null>(null)
 
   useEffect(() => {
     setIsClient(true)
@@ -30,6 +34,31 @@ export default function DashboardPage() {
       deleteWorkout(selectedWorkout.id)
       setSelectedWorkout(null)
       setShowDeleteConfirm(false)
+    }
+  }
+
+  const handleStartTemplate = (template: WorkoutTemplate) => {
+    // Start workout with template name
+    startWorkout(template.name)
+    
+    // Add all exercises from the template
+    template.exercises.forEach((exercise) => {
+      addExercise({
+        id: crypto.randomUUID(),
+        name: exercise.name,
+        bodyPart: undefined
+      })
+    })
+    
+    // Navigate to log page
+    router.push('/log')
+  }
+
+  const getDifficultyColor = (difficulty: WorkoutTemplate['difficulty']) => {
+    switch (difficulty) {
+      case 'Beginner': return 'text-green-400 bg-green-400/10'
+      case 'Intermediate': return 'text-yellow-400 bg-yellow-400/10'
+      case 'Advanced': return 'text-red-400 bg-red-400/10'
     }
   }
 
@@ -188,6 +217,61 @@ export default function DashboardPage() {
                 </Button>
              </Link>
         </div>
+      </section>
+
+      {/* Workout Templates */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-heading font-bold text-white flex items-center gap-2">
+            <Dumbbell className="w-5 h-5 text-primary" />
+            Workout Programs
+          </h2>
+          <Zap className="w-5 h-5 text-primary" />
+        </div>
+        <p className="text-text-muted text-sm mb-4">Your personal trainer, anytime 💪</p>
+        
+        <div className="grid grid-cols-1 gap-3">
+          {WORKOUT_TEMPLATES.slice(0, 5).map((template) => (
+            <Card 
+              key={template.id}
+              onClick={() => setSelectedTemplate(template)}
+              className="p-4 hover:border-primary/50 transition-all cursor-pointer group"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-bold text-white group-hover:text-primary transition-colors">{template.name}</h3>
+                    <span className={`text-xs px-2 py-0.5 rounded ${getDifficultyColor(template.difficulty)}`}>
+                      {template.difficulty}
+                    </span>
+                  </div>
+                  <p className="text-xs text-text-muted mb-2">{template.description}</p>
+                  <div className="flex items-center gap-3 text-xs text-text-secondary">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {template.duration}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Target className="w-3 h-3" />
+                      {template.exercises.length} exercises
+                    </span>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
+              </div>
+            </Card>
+          ))}
+        </div>
+        
+        {WORKOUT_TEMPLATES.length > 5 && (
+          <Button 
+            variant="ghost" 
+            className="w-full mt-3 text-primary hover:bg-primary/10"
+            onClick={() => router.push('/templates')}
+          >
+            View All {WORKOUT_TEMPLATES.length} Programs
+          </Button>
+        )}
       </section>
 
       {/* Recent Activity */}
@@ -368,6 +452,80 @@ export default function DashboardPage() {
                   Delete
                 </Button>
               </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Workout Template Detail Modal */}
+      {selectedTemplate && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <Card className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl">
+            <div className="sticky top-0 bg-bg-card backdrop-blur-sm p-6 border-b border-white/10 z-10">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h2 className="text-2xl font-bold text-white">{selectedTemplate.name}</h2>
+                    <span className={`text-xs px-2 py-1 rounded ${getDifficultyColor(selectedTemplate.difficulty)}`}>
+                      {selectedTemplate.difficulty}
+                    </span>
+                  </div>
+                  <p className="text-text-muted mb-3">{selectedTemplate.description}</p>
+                  <div className="flex items-center gap-4 text-sm text-text-secondary">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {selectedTemplate.duration}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Target className="w-4 h-4" />
+                      {selectedTemplate.exercises.length} exercises
+                    </span>
+                    <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium">
+                      {selectedTemplate.category}
+                    </span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedTemplate(null)} 
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6 text-text-muted hover:text-white" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-3">
+              <h3 className="text-lg font-bold text-white mb-3">Exercise Plan</h3>
+              {selectedTemplate.exercises.map((exercise, index) => (
+                <div 
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="font-medium text-white">{exercise.name}</p>
+                      <p className="text-xs text-text-muted">
+                        {exercise.sets} sets 
+                        {exercise.reps && ` × ${exercise.reps} reps`}
+                        {exercise.duration && ` × ${exercise.duration} min`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="sticky bottom-0 bg-bg-card backdrop-blur-sm p-6 border-t border-white/10">
+              <Button 
+                onClick={() => handleStartTemplate(selectedTemplate)}
+                className="w-full bg-gradient-to-r from-primary to-blue-500 hover:opacity-90 text-white font-bold py-4"
+              >
+                <Zap className="w-5 h-5 mr-2" />
+                Start This Workout
+              </Button>
             </div>
           </Card>
         </div>
