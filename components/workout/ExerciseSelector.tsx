@@ -25,8 +25,8 @@ export function ExerciseSelector({ onSelect, onCancel }: ExerciseSelectorProps) 
   })
 
   return (
-    <div className="fixed inset-0 z-[100] bg-bg-primary flex flex-col animate-in slide-in-from-bottom-10 duration-300">
-      <div className="p-4 border-b border-white/10 space-y-4 bg-bg-secondary/95 backdrop-blur sticky top-0 z-10">
+    <div className="fixed inset-0 z-[100] bg-black flex flex-col animate-in slide-in-from-bottom-10 duration-300">
+      <div className="p-4 border-b border-white/10 space-y-4 bg-bg-secondary sticky top-0 z-10 shadow-lg">
         <div className="flex items-center justify-between">
             <h2 className="text-xl font-heading font-bold text-white">Add Exercise</h2>
             <Button 
@@ -78,7 +78,7 @@ export function ExerciseSelector({ onSelect, onCancel }: ExerciseSelectorProps) 
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-2 pb-8">
+      <div className="flex-1 overflow-y-auto p-4 space-y-2 pb-8 bg-bg-primary">
         {filteredExercises.map(ex => (
             <button
                 key={ex.id} 
