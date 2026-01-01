@@ -4,13 +4,15 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
-import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle } from "lucide-react"
+import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
+import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
 
 export default function DashboardPage() {
   const { history } = useWorkoutStore()
   const [isClient, setIsClient] = useState(false)
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
+  const [selectedWorkout, setSelectedWorkout] = useState<any>(null)
 
   useEffect(() => {
     setIsClient(true)
@@ -155,7 +157,11 @@ export default function DashboardPage() {
         ) : (
              <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
                 {history.slice(0, 5).map((workout) => (
-                    <Card key={workout.id} className="min-w-[160px] p-4 bg-gradient-to-br from-gray-900 to-gray-800 border-l-2 border-l-accent-blue">
+                    <Card 
+                      key={workout.id} 
+                      onClick={() => setSelectedWorkout(workout)}
+                      className="min-w-[160px] p-4 bg-gradient-to-br from-gray-900 to-gray-800 border-l-2 border-l-accent-blue cursor-pointer hover:border-l-primary transition-all hover:scale-105 active:scale-95"
+                    >
                         <p className="text-xs text-text-muted mb-1">{new Date(workout.endTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric'})}</p>
                         <p className="text-lg font-bold text-white truncate max-w-[140px]">{workout.name}</p>
                         <p className="text-xs text-text-secondary mt-1">{workout.exercises.length} Exercises</p>
@@ -164,6 +170,118 @@ export default function DashboardPage() {
             </div>
         )}
       </section>
+
+      {/* Workout Detail Modal */}
+      {selectedWorkout && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl">
+            <div className="sticky top-0 bg-bg-card/95 backdrop-blur p-4 border-b border-white/10 z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h2 className="text-xl font-bold text-white">{selectedWorkout.name}</h2>
+                  <p className="text-sm text-text-muted flex items-center gap-2">
+                    <Calendar className="w-3 h-3" />
+                    {new Date(selectedWorkout.endTime).toLocaleDateString()}
+                    <Clock className="w-3 h-3 ml-2" />
+                    {Math.round(selectedWorkout.durationMs / 1000 / 60)}m
+                  </p>
+                </div>
+                <button onClick={() => setSelectedWorkout(null)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                  <X className="w-6 h-6 text-text-muted hover:text-white" />
+                </button>
+              </div>
+              
+              {/* Workout Summary */}
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                {(() => {
+                  const totalVolume = selectedWorkout.exercises.reduce((acc: number, ex: any) => 
+                    acc + ex.sets.filter((s: any) => s.completed).reduce((sum: number, set: any) => 
+                      sum + (set.weight || 0) * (set.reps || 0), 0
+                    ), 0
+                  )
+                  const totalDuration = selectedWorkout.exercises.reduce((acc: number, ex: any) =>
+                    acc + ex.sets.filter((s: any) => s.completed).reduce((sum: number, set: any) =>
+                      sum + (set.duration || 0), 0
+                    ), 0
+                  )
+                  const totalDistance = selectedWorkout.exercises.reduce((acc: number, ex: any) =>
+                    acc + ex.sets.filter((s: any) => s.completed).reduce((sum: number, set: any) =>
+                      sum + (set.distance || 0), 0
+                    ), 0
+                  )
+
+                  return (
+                    <>
+                      {totalVolume > 0 && (
+                        <div className="bg-white/5 rounded-lg p-2">
+                          <p className="text-xs text-text-muted">Volume</p>
+                          <p className="text-sm font-mono font-bold text-white">{totalVolume.toLocaleString()} lbs</p>
+                        </div>
+                      )}
+                      {totalDuration > 0 && (
+                        <div className="bg-white/5 rounded-lg p-2">
+                          <p className="text-xs text-text-muted">Duration</p>
+                          <p className="text-sm font-mono font-bold text-white">{totalDuration} min</p>
+                        </div>
+                      )}
+                      {totalDistance > 0 && (
+                        <div className="bg-white/5 rounded-lg p-2">
+                          <p className="text-xs text-text-muted">Distance</p>
+                          <p className="text-sm font-mono font-bold text-white">{totalDistance.toFixed(1)} mi</p>
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
+              </div>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {selectedWorkout.exercises.map((exercise: any) => {
+                const cardioMachines = ['treadmill', 'elliptical', 'cycling', 'rowing', 'stairmaster', 'bike']
+                const isCardioMachine = exercise.name && cardioMachines.some((machine: string) => 
+                  exercise.name.toLowerCase().includes(machine)
+                )
+                const isTimeBased = exercise.bodyPart && ['Cardio', 'Sports'].includes(exercise.bodyPart)
+
+                return (
+                  <div key={exercise.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-bold text-white">{exercise.name}</h3>
+                        {exercise.bodyPart && (
+                          <span className="text-xs text-text-muted uppercase">{exercise.bodyPart}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {exercise.sets.filter((s: any) => s.completed).map((set: any, idx: number) => (
+                        <div key={set.id} className="bg-white/5 rounded-lg p-3 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-text-muted">Set {idx + 1}</span>
+                            <div className="font-mono text-white">
+                              {set.weight > 0 && set.reps > 0 && (
+                                <span>{set.weight} lbs × {set.reps} reps</span>
+                              )}
+                              {set.duration > 0 && !set.distance && (
+                                <span>{set.duration} min</span>
+                              )}
+                              {set.distance > 0 && (
+                                <span>{set.distance} mi • {set.duration} min{set.calories > 0 && ` • ${set.calories} cal`}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
