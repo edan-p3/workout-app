@@ -4,12 +4,13 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
-import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight } from "lucide-react"
+import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 
 export default function DashboardPage() {
   const { history } = useWorkoutStore()
   const [isClient, setIsClient] = useState(false)
+  const [showTooltip, setShowTooltip] = useState<string | null>(null)
 
   useEffect(() => {
     setIsClient(true)
@@ -28,6 +29,35 @@ export default function DashboardPage() {
 
   // Current Streak (Mock logic for now, real logic needs continuous dates)
   const currentStreak = weeklyWorkouts.length > 0 ? weeklyWorkouts.length : 0 
+
+  const tooltips = {
+    workouts: "Number of workout sessions completed in the last 7 days",
+    volume: "Total weight lifted (weight × reps × sets) across all strength exercises",
+    time: "Total minutes spent exercising across all workouts",
+    weight: "Your current body weight and change since last measurement"
+  }
+
+  const InfoIcon = ({ type }: { type: keyof typeof tooltips }) => (
+    <div className="relative inline-block">
+      <button
+        onClick={() => setShowTooltip(showTooltip === type ? null : type)}
+        className="ml-1 text-text-muted hover:text-primary transition-colors"
+      >
+        <HelpCircle className="w-3 h-3" />
+      </button>
+      {showTooltip === type && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setShowTooltip(null)}
+          />
+          <div className="absolute left-0 top-full mt-1 z-50 w-48 p-2 bg-bg-card border border-primary/20 rounded-lg shadow-lg text-xs text-white animate-in fade-in zoom-in-95 duration-200">
+            {tooltips[type]}
+          </div>
+        </>
+      )}
+    </div>
+  ) 
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -52,22 +82,34 @@ export default function DashboardPage() {
         </div>
         <Card className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <p className="text-text-muted text-xs uppercase">Workouts</p>
+            <p className="text-text-muted text-xs uppercase flex items-center">
+              Workouts
+              <InfoIcon type="workouts" />
+            </p>
             <p className="text-2xl font-mono font-bold">{weeklyWorkouts.length}<span className="text-text-muted text-sm font-normal"> sessions</span></p>
           </div>
           <div className="space-y-1">
-            <p className="text-text-muted text-xs uppercase">Volume</p>
+            <p className="text-text-muted text-xs uppercase flex items-center">
+              Volume
+              <InfoIcon type="volume" />
+            </p>
             <div className="flex items-center gap-1">
               <p className="text-2xl font-mono font-bold">{(weeklyVolume / 1000).toFixed(1)}k</p>
               <TrendingUp className="w-4 h-4 text-success" />
             </div>
           </div>
           <div className="space-y-1">
-            <p className="text-text-muted text-xs uppercase">Time</p>
+            <p className="text-text-muted text-xs uppercase flex items-center">
+              Time
+              <InfoIcon type="time" />
+            </p>
             <p className="text-2xl font-mono font-bold">{weeklyDurationMinutes}<span className="text-sm text-text-muted font-sans">m</span></p>
           </div>
           <Link href="/measurements" className="space-y-1 hover:opacity-80 transition-opacity">
-            <p className="text-text-muted text-xs uppercase">Weight</p>
+            <p className="text-text-muted text-xs uppercase flex items-center">
+              Weight
+              <InfoIcon type="weight" />
+            </p>
             <div className="flex items-center gap-1">
               <p className="text-2xl font-mono font-bold">185</p>
               <span className="text-xs text-success bg-success/10 px-1.5 py-0.5 rounded">-1.2</span>

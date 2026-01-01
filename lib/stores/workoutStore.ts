@@ -44,6 +44,7 @@ export type WorkoutState = {
   completeSet: (exerciseId: string, setId: string) => void
   finishWorkout: () => void
   resetWorkout: () => void
+  updateHistoryWorkout: (workoutId: string, updatedWorkout: CompletedWorkout) => void
 }
 
 export const useWorkoutStore = create<WorkoutState>()(
@@ -159,6 +160,9 @@ export const useWorkoutStore = create<WorkoutState>()(
         }
       }), 
       resetWorkout: () => set({ activeWorkout: null }),
+      updateHistoryWorkout: (workoutId, updatedWorkout) => set((state) => ({
+        history: state.history.map(w => w.id === workoutId ? updatedWorkout : w)
+      })),
     }),
     {
       name: 'workout-storage',
