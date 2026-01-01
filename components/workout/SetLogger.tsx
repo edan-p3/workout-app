@@ -17,8 +17,8 @@ export function SetLogger({ exerciseId, set, index, exerciseCategory, exerciseNa
   const updateSet = useWorkoutStore(state => state.updateSet)
   const completeSet = useWorkoutStore(state => state.completeSet)
 
-  // Check if this is a cardio machine (treadmill, elliptical, cycling, rowing, stairmaster)
-  const cardioMachines = ['treadmill', 'elliptical', 'cycling', 'rowing', 'stairmaster', 'bike']
+  // Check if this is a cardio machine (treadmill, elliptical, cycling, rowing, stairmaster, walking)
+  const cardioMachines = ['treadmill', 'elliptical', 'cycling', 'rowing', 'stairmaster', 'bike', 'walking']
   const isCardioMachine = exerciseName && cardioMachines.some(machine => 
     exerciseName.toLowerCase().includes(machine)
   )
