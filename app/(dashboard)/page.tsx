@@ -48,7 +48,7 @@ export default function DashboardPage() {
     weight: "Your current body weight and change since last measurement"
   }
 
-  const InfoIcon = ({ type }: { type: keyof typeof tooltips }) => (
+  const InfoIcon = ({ type, align = "left" }: { type: keyof typeof tooltips, align?: "left" | "right" }) => (
     <div className="relative inline-block">
       <button
         onClick={(e) => {
@@ -67,8 +67,8 @@ export default function DashboardPage() {
             className="fixed inset-0 z-[70]" 
             onClick={() => setShowTooltip(null)}
           />
-          <div className="absolute left-0 top-full mt-2 z-[80] w-56 px-4 py-3 bg-white rounded-xl shadow-2xl text-xs text-primary font-medium leading-relaxed animate-in fade-in zoom-in-95 duration-200 opacity-100">
-            <div className="absolute -top-1.5 left-4 w-3 h-3 bg-white rotate-45"></div>
+          <div className={`absolute ${align === "right" ? "right-0" : "left-0"} top-full mt-2 z-[80] w-56 px-4 py-3 bg-white rounded-xl shadow-2xl text-xs text-primary font-medium leading-relaxed animate-in fade-in zoom-in-95 duration-200 opacity-100`}>
+            <div className={`absolute -top-1.5 ${align === "right" ? "right-4" : "left-4"} w-3 h-3 bg-white rotate-45`}></div>
             {tooltips[type]}
           </div>
         </>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
           <div className="space-y-1">
             <p className="text-text-muted text-xs uppercase flex items-center">
               Volume
-              <InfoIcon type="volume" />
+              <InfoIcon type="volume" align="right" />
             </p>
             <div className="flex items-center gap-1">
               <p className="text-2xl font-mono font-bold">{(weeklyVolume / 1000).toFixed(1)}k</p>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
           <div className="space-y-1">
             <p className="text-text-muted text-xs uppercase flex items-center">
               Weight
-              <InfoIcon type="weight" />
+              <InfoIcon type="weight" align="right" />
             </p>
             <Link href="/measurements" className="block hover:opacity-80 transition-opacity">
               <div className="flex items-center gap-1">
