@@ -198,9 +198,9 @@ export default function DashboardPage() {
 
       {/* Workout Detail Modal */}
       {selectedWorkout && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl">
-            <div className="sticky top-0 bg-bg-card/95 backdrop-blur p-4 border-b border-white/10 z-10">
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <Card className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl">
+            <div className="sticky top-0 bg-bg-card backdrop-blur-sm p-4 border-b border-white/10 z-10">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <h2 className="text-xl font-bold text-white">{selectedWorkout.name}</h2>
@@ -270,7 +270,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-4 pb-6">
               {selectedWorkout.exercises.map((exercise: any) => {
                 const cardioMachines = ['treadmill', 'elliptical', 'cycling', 'rowing', 'stairmaster', 'bike']
                 const isCardioMachine = exercise.name && cardioMachines.some((machine: string) => 
