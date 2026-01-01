@@ -231,7 +231,7 @@ export default function DashboardPage() {
         <p className="text-text-muted text-sm mb-4">Your personal trainer, anytime 💪</p>
         
         <div className="grid grid-cols-1 gap-3">
-          {WORKOUT_TEMPLATES.slice(0, 5).map((template) => (
+          {WORKOUT_TEMPLATES.map((template) => (
             <Card 
               key={template.id}
               onClick={() => setSelectedTemplate(template)}
@@ -262,16 +262,6 @@ export default function DashboardPage() {
             </Card>
           ))}
         </div>
-        
-        {WORKOUT_TEMPLATES.length > 5 && (
-          <Button 
-            variant="ghost" 
-            className="w-full mt-3 text-primary hover:bg-primary/10"
-            onClick={() => router.push('/templates')}
-          >
-            View All {WORKOUT_TEMPLATES.length} Programs
-          </Button>
-        )}
       </section>
 
       {/* Recent Activity */}
