@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
-import { Scale, Calendar, Trash2 } from "lucide-react"
+import { Scale, Calendar, Trash2, X, ArrowLeft } from "lucide-react"
 import { useWeightStore } from "@/lib/stores/weightStore"
 
 export default function BodyWeightPage() {
+  const router = useRouter()
   const { entries, addEntry, deleteEntry, getLatestWeight } = useWeightStore()
   const [weight, setWeight] = useState("")
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
@@ -25,11 +27,24 @@ export default function BodyWeightPage() {
     setWeight("")
   }
 
+  const handleBack = () => {
+    router.back()
+  }
+
   const latestWeight = getLatestWeight()
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <h1 className="text-2xl font-heading font-bold text-white">Body Weight</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-heading font-bold text-white">Body Weight</h1>
+        <button
+          onClick={handleBack}
+          className="p-2 text-text-muted hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+          aria-label="Go back"
+        >
+          <X className="w-6 h-6" />
+        </button>
+      </div>
 
       <Card className="p-6 space-y-4">
         <div className="flex items-center gap-4 mb-2">
