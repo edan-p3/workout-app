@@ -4,13 +4,14 @@ import { useEffect, useState } from "react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
-import { Plus, Timer, ChevronRight, CheckCircle2 } from "lucide-react"
+import { Plus, Timer, ChevronRight, CheckCircle2, ChevronDown, ChevronUp, Info } from "lucide-react"
 import { SetLogger } from "@/components/workout/SetLogger"
 import { calculateVolume } from "@/lib/utils/calculations"
 import { cn } from "@/lib/utils/cn"
 import { WorkoutStarter } from "@/components/workout/WorkoutStarter"
 import { ExerciseSelector } from "@/components/workout/ExerciseSelector"
 import { useRouter } from "next/navigation"
+import { getExerciseInstructions } from "@/lib/data/exerciseInstructions"
 
 export default function LogWorkoutPage() {
   const router = useRouter()
@@ -18,6 +19,7 @@ export default function LogWorkoutPage() {
   const [isClient, setIsClient] = useState(false)
   const [showExerciseSelector, setShowExerciseSelector] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [expandedExercise, setExpandedExercise] = useState<string | null>(null)
 
   useEffect(() => {
     setIsClient(true)
@@ -92,11 +94,29 @@ export default function LogWorkoutPage() {
                     </Button>
                 </div>
             ) : (
-                activeWorkout.exercises.map((exercise) => (
+                activeWorkout.exercises.map((exercise) => {
+                  const instructions = getExerciseInstructions(exercise.name)
+                  const isExpanded = expandedExercise === exercise.id
+                  
+                  return (
                 <Card key={exercise.id} className="p-4 space-y-4 bg-bg-card/50">
                     <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                        <h3 className="font-bold text-lg text-white">{exercise.name}</h3>
+                    <div className="space-y-0.5 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-lg text-white">{exercise.name}</h3>
+                          {instructions && (
+                            <button
+                              onClick={() => setExpandedExercise(isExpanded ? null : exercise.id)}
+                              className="p-1 hover:bg-white/10 rounded transition-colors"
+                            >
+                              {isExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-primary" />
+                              ) : (
+                                <Info className="w-4 h-4 text-primary" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                         {exercise.bodyPart && (
                             <span className="text-[10px] uppercase tracking-wider text-text-muted bg-white/5 px-1.5 py-0.5 rounded">
                                 {exercise.bodyPart}
@@ -170,8 +190,35 @@ export default function LogWorkoutPage() {
                     >
                         <Plus className="w-3 h-3 mr-1" /> Add Set
                     </Button>
+
+                    {/* Form Instructions (Expandable) */}
+                    {isExpanded && instructions && (
+                      <div className="pt-2 space-y-2 animate-in slide-in-from-top-2 duration-200">
+                        <div className="p-3 bg-black/30 rounded-lg space-y-2 border border-primary/20">
+                          <p className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1">
+                            <Info className="w-3 h-3" />
+                            Proper Form:
+                          </p>
+                          <ul className="space-y-1.5">
+                            {instructions.formCues.map((cue, i) => (
+                              <li key={i} className="text-xs text-text-secondary flex items-start gap-2">
+                                <span className="text-primary mt-0.5 font-bold">•</span>
+                                <span>{cue}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          {instructions.tips && (
+                            <div className="pt-2 mt-2 border-t border-white/10">
+                              <p className="text-xs font-bold text-yellow-400 mb-1">💡 Pro Tip:</p>
+                              <p className="text-xs text-text-secondary italic">{instructions.tips}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                 </Card>
-                ))
+                  )
+                })
             )}
         </div>
 
