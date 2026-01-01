@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [selectedWorkout, setSelectedWorkout] = useState<any>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<WorkoutTemplate | null>(null)
+  const [showAllTemplates, setShowAllTemplates] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -231,7 +232,7 @@ export default function DashboardPage() {
         <p className="text-text-muted text-sm mb-4">Your personal trainer, anytime 💪</p>
         
         <div className="grid grid-cols-1 gap-3">
-          {WORKOUT_TEMPLATES.map((template) => (
+          {(showAllTemplates ? WORKOUT_TEMPLATES : WORKOUT_TEMPLATES.slice(0, 4)).map((template) => (
             <Card 
               key={template.id}
               onClick={() => setSelectedTemplate(template)}
@@ -262,6 +263,20 @@ export default function DashboardPage() {
             </Card>
           ))}
         </div>
+        
+        {WORKOUT_TEMPLATES.length > 4 && (
+          <Button 
+            variant="ghost" 
+            className="w-full mt-3 text-primary hover:bg-primary/10"
+            onClick={() => setShowAllTemplates(!showAllTemplates)}
+          >
+            {showAllTemplates ? (
+              <>Show Less</>
+            ) : (
+              <>Show All {WORKOUT_TEMPLATES.length} Programs</>
+            )}
+          </Button>
+        )}
       </section>
 
       {/* Recent Activity */}
