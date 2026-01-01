@@ -98,7 +98,7 @@ export const useWorkoutStore = create<WorkoutState>()(
                   { 
                     id: crypto.randomUUID(), 
                     weight: previousSet ? previousSet.weight : 0, 
-                    reps: previousSet ? previousSet.reps : 0,
+                    reps: previousSet ? previousSet.reps : 0, 
                     duration: previousSet ? previousSet.duration : 0,
                     distance: previousSet ? previousSet.distance : 0,
                     calories: previousSet ? previousSet.calories : 0,
