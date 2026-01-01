@@ -8,18 +8,14 @@ INSERT INTO public.gamification_data (
   current_streak,
   longest_streak,
   total_points,
-  level,
-  achievements,
   weekly_stats
 )
 SELECT 
   u.id,
   COALESCE((SELECT COUNT(*) FROM workouts WHERE user_id = u.id AND is_completed = true), 0) as total_workouts,
-  0 as current_streak, -- Will be calculated later
+  0 as current_streak,
   0 as longest_streak,
   COALESCE((SELECT COUNT(*) * 100 FROM workouts WHERE user_id = u.id AND is_completed = true), 0) as total_points,
-  1 as level,
-  '[]'::jsonb as achievements,
   jsonb_build_object(
     'week_start', CURRENT_DATE,
     'workouts_completed', 0,
