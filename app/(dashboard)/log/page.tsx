@@ -70,9 +70,18 @@ export default function LogWorkoutPage() {
         {/* Exercises List */}
         <div className="space-y-4">
             {activeWorkout.exercises.length === 0 ? (
-                <div className="text-center py-10 space-y-4 border-2 border-dashed border-white/5 rounded-2xl">
-                    <p className="text-text-muted">No exercises added yet.</p>
-                    <Button onClick={() => setShowExerciseSelector(true)}>Add First Exercise</Button>
+                <div className="text-center py-12 space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                        <Plus className="w-8 h-8 text-primary" />
+                    </div>
+                    <p className="text-text-muted text-sm">No exercises added yet.</p>
+                    <Button 
+                        onClick={() => setShowExerciseSelector(true)}
+                        className="mx-auto"
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Exercise
+                    </Button>
                 </div>
             ) : (
                 activeWorkout.exercises.map((exercise) => (
