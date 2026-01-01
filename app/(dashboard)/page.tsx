@@ -4,11 +4,12 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
-import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target } from "lucide-react"
+import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { useWeightStore } from "@/lib/stores/weightStore"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
 import { WORKOUT_TEMPLATES, type WorkoutTemplate } from "@/lib/data/workoutTemplates"
+import { getExerciseInstructions } from "@/lib/data/exerciseInstructions"
 import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<WorkoutTemplate | null>(null)
   const [showAllTemplates, setShowAllTemplates] = useState(false)
+  const [expandedExercise, setExpandedExercise] = useState<number | null>(null)
 
   useEffect(() => {
     setIsClient(true)
@@ -501,26 +503,68 @@ export default function DashboardPage() {
 
             <div className="p-6 space-y-3">
               <h3 className="text-lg font-bold text-white mb-3">Exercise Plan</h3>
-              {selectedTemplate.exercises.map((exercise, index) => (
-                <div 
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                      {index + 1}
+              {selectedTemplate.exercises.map((exercise, index) => {
+                const instructions = getExerciseInstructions(exercise.name)
+                const isExpanded = expandedExercise === index
+                
+                return (
+                  <div 
+                    key={index}
+                    className="bg-white/5 rounded-lg overflow-hidden"
+                  >
+                    <div 
+                      className="flex items-center justify-between p-3 hover:bg-white/10 transition-colors cursor-pointer"
+                      onClick={() => setExpandedExercise(isExpanded ? null : index)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium text-white">{exercise.name}</p>
+                          <p className="text-xs text-text-muted">
+                            {exercise.sets} sets 
+                            {exercise.reps && ` × ${exercise.reps} reps`}
+                            {exercise.duration && ` × ${exercise.duration} min`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {instructions && (
+                          <Info className="w-4 h-4 text-primary" />
+                        )}
+                        {instructions && (isExpanded ? (
+                          <ChevronUp className="w-5 h-5 text-text-muted" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-text-muted" />
+                        ))}
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-white">{exercise.name}</p>
-                      <p className="text-xs text-text-muted">
-                        {exercise.sets} sets 
-                        {exercise.reps && ` × ${exercise.reps} reps`}
-                        {exercise.duration && ` × ${exercise.duration} min`}
-                      </p>
-                    </div>
+                    
+                    {isExpanded && instructions && (
+                      <div className="px-3 pb-3 space-y-3 animate-in slide-in-from-top-2 duration-200">
+                        <div className="p-3 bg-black/20 rounded-lg space-y-2">
+                          <p className="text-xs font-bold text-primary uppercase tracking-wider">Proper Form:</p>
+                          <ul className="space-y-1.5">
+                            {instructions.formCues.map((cue, i) => (
+                              <li key={i} className="text-xs text-text-secondary flex items-start gap-2">
+                                <span className="text-primary mt-0.5">•</span>
+                                <span>{cue}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          {instructions.tips && (
+                            <div className="pt-2 mt-2 border-t border-white/10">
+                              <p className="text-xs font-bold text-yellow-400 mb-1">💡 Pro Tip:</p>
+                              <p className="text-xs text-text-secondary italic">{instructions.tips}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <div className="sticky bottom-0 bg-bg-card backdrop-blur-sm p-6 border-t border-white/10">
