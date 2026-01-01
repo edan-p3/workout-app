@@ -261,6 +261,10 @@ export const useWorkoutStore = create<WorkoutState>()(
       deleteWorkout: async (workoutId) => {
         // Delete from database first
         try {
+          const { data: { user } } = await supabase.auth.getUser()
+          
+          if (!user) return
+
           const { error } = await supabase
             .from('workouts')
             .delete()
@@ -269,6 +273,26 @@ export const useWorkoutStore = create<WorkoutState>()(
           if (error) {
             console.error('Error deleting workout from database:', error)
             return
+          }
+
+          // Update gamification stats (decrement)
+          const { data: currentGamification, error: gamError } = await supabase
+            .from('gamification_data')
+            .select('*')
+            .eq('user_id', user.id)
+            .single()
+
+          if (!gamError && currentGamification) {
+            await supabase
+              .from('gamification_data')
+              .update({
+                total_workouts: Math.max(0, currentGamification.total_workouts - 1),
+                current_streak: Math.max(0, currentGamification.current_streak - 1),
+                total_points: Math.max(0, currentGamification.total_points - 100)
+              })
+              .eq('user_id', user.id)
+            
+            console.log('Gamification stats decremented after workout deletion')
           }
         } catch (error) {
           console.error('Error in deleteWorkout:', error)
