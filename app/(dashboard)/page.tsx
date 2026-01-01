@@ -4,21 +4,30 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
-import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer } from "lucide-react"
+import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2 } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
 
 export default function DashboardPage() {
-  const { history } = useWorkoutStore()
+  const { history, deleteWorkout } = useWorkoutStore()
   const [isClient, setIsClient] = useState(false)
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
   const [selectedWorkout, setSelectedWorkout] = useState<any>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
   if (!isClient) return null
+
+  const handleDelete = () => {
+    if (selectedWorkout) {
+      deleteWorkout(selectedWorkout.id)
+      setSelectedWorkout(null)
+      setShowDeleteConfirm(false)
+    }
+  }
 
   // Calculate Stats
   const now = new Date()
@@ -186,9 +195,18 @@ export default function DashboardPage() {
                     {Math.round(selectedWorkout.durationMs / 1000 / 60)}m
                   </p>
                 </div>
-                <button onClick={() => setSelectedWorkout(null)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                  <X className="w-6 h-6 text-text-muted hover:text-white" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => setShowDeleteConfirm(true)} 
+                    className="p-2 hover:bg-error/20 text-error rounded-lg transition-colors"
+                    aria-label="Delete workout"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                  <button onClick={() => setSelectedWorkout(null)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <X className="w-6 h-6 text-text-muted hover:text-white" />
+                  </button>
+                </div>
               </div>
               
               {/* Workout Summary */}
@@ -278,6 +296,40 @@ export default function DashboardPage() {
                   </div>
                 )
               })}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <Card className="w-full max-w-sm p-6">
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-error/20 flex items-center justify-center mx-auto">
+                <Trash2 className="w-6 h-6 text-error" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-1">Delete Workout?</h3>
+                <p className="text-sm text-text-muted">
+                  This will permanently delete "{selectedWorkout?.name}" from your history.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleDelete}
+                  className="flex-1 bg-error hover:bg-error/80"
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
           </Card>
         </div>

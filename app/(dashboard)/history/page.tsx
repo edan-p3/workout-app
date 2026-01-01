@@ -11,10 +11,11 @@ import { cn } from "@/lib/utils/cn"
 import Link from "next/link"
 
 export default function HistoryPage() {
-  const { history, updateHistoryWorkout } = useWorkoutStore()
+  const { history, updateHistoryWorkout, deleteWorkout } = useWorkoutStore()
   const [selectedWorkout, setSelectedWorkout] = useState<any>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [editedWorkout, setEditedWorkout] = useState<any>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const getWorkoutSummary = (workout: any) => {
     const totalVolume = workout.exercises.reduce((acc: number, ex: any) => acc + calculateVolume(ex.sets), 0)
@@ -40,6 +41,14 @@ export default function HistoryPage() {
   const handleCancel = () => {
     setEditedWorkout(null)
     setIsEditing(false)
+  }
+
+  const handleDelete = () => {
+    if (selectedWorkout) {
+      deleteWorkout(selectedWorkout.id)
+      setSelectedWorkout(null)
+      setShowDeleteConfirm(false)
+    }
   }
 
   const updateSet = (exerciseId: string, setId: string, field: string, value: any) => {
@@ -190,10 +199,20 @@ export default function HistoryPage() {
               
               <div className="flex gap-2">
                 {!isEditing ? (
-                  <Button size="sm" onClick={handleEdit} className="flex-1">
-                    <Edit2 className="w-4 h-4 mr-2" />
-                    Edit Workout
-                  </Button>
+                  <>
+                    <Button size="sm" onClick={handleEdit} className="flex-1">
+                      <Edit2 className="w-4 h-4 mr-2" />
+                      Edit Workout
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="secondary" 
+                      onClick={() => setShowDeleteConfirm(true)} 
+                      className="bg-error/20 hover:bg-error/30 text-error border-error/30"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <Button size="sm" onClick={handleSave} className="flex-1 bg-success hover:bg-success/80">
@@ -344,6 +363,40 @@ export default function HistoryPage() {
                   </div>
                 )
               })}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <Card className="w-full max-w-sm p-6">
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-error/20 flex items-center justify-center mx-auto">
+                <Trash2 className="w-6 h-6 text-error" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-1">Delete Workout?</h3>
+                <p className="text-sm text-text-muted">
+                  This will permanently delete "{selectedWorkout?.name}" from your history.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleDelete}
+                  className="flex-1 bg-error hover:bg-error/80"
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
           </Card>
         </div>
