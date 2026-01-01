@@ -130,16 +130,18 @@ export default function DashboardPage() {
             </p>
             <p className="text-2xl font-mono font-bold">{weeklyDurationMinutes}<span className="text-sm text-text-muted font-sans">m</span></p>
           </div>
-          <Link href="/measurements" className="space-y-1 hover:opacity-80 transition-opacity">
+          <div className="space-y-1">
             <p className="text-text-muted text-xs uppercase flex items-center">
               Weight
               <InfoIcon type="weight" />
             </p>
-            <div className="flex items-center gap-1">
-              <p className="text-2xl font-mono font-bold">185</p>
-              <span className="text-xs text-success bg-success/10 px-1.5 py-0.5 rounded">-1.2</span>
-            </div>
-          </Link>
+            <Link href="/measurements" className="block hover:opacity-80 transition-opacity">
+              <div className="flex items-center gap-1">
+                <p className="text-2xl font-mono font-bold">185</p>
+                <span className="text-xs text-success bg-success/10 px-1.5 py-0.5 rounded">-1.2</span>
+              </div>
+            </Link>
+          </div>
         </Card>
       </section>
 
