@@ -105,15 +105,15 @@ export default function DashboardPage() {
           <h2 className="text-xl font-heading font-bold text-white">Weekly Summary</h2>
           <span className="text-xs text-text-muted">Last 7 Days</span>
         </div>
-        <Card className="grid grid-cols-2 gap-x-16 gap-y-6 justify-items-center">
-          <div className="space-y-1 w-full max-w-[140px]">
+        <Card className="grid grid-cols-2 gap-x-4 gap-y-6 md:px-16">
+          <div className="space-y-1 w-full pl-12">
             <p className="text-text-muted text-xs uppercase flex items-center">
               Workouts
               <InfoIcon type="workouts" />
             </p>
             <p className="text-2xl font-mono font-bold">{weeklyWorkouts.length}<span className="text-text-muted text-sm font-normal"> sessions</span></p>
           </div>
-          <div className="space-y-1 w-full max-w-[140px]">
+          <div className="space-y-1 w-full pl-6">
             <p className="text-text-muted text-xs uppercase flex items-center">
               Volume
               <InfoIcon type="volume" align="right" />
@@ -123,14 +123,14 @@ export default function DashboardPage() {
               <TrendingUp className="w-4 h-4 text-success" />
             </div>
           </div>
-          <div className="space-y-1 w-full max-w-[140px]">
+          <div className="space-y-1 w-full pl-12">
             <p className="text-text-muted text-xs uppercase flex items-center">
               Time
               <InfoIcon type="time" />
             </p>
             <p className="text-2xl font-mono font-bold">{weeklyDurationMinutes}<span className="text-sm text-text-muted font-sans">m</span></p>
           </div>
-          <div className="space-y-1 w-full max-w-[140px]">
+          <div className="space-y-1 w-full pl-6">
             <p className="text-text-muted text-xs uppercase flex items-center">
               Weight
               <InfoIcon type="weight" align="right" />
