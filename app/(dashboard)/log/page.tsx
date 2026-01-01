@@ -46,9 +46,24 @@ export default function LogWorkoutPage() {
                 <h1 className="text-xl font-heading font-bold text-white">{activeWorkout.name}</h1>
                 <p className="text-xs text-text-muted">{activeWorkout.exercises.length} Exercises</p>
             </div>
-            <div className="flex items-center gap-2 text-sm font-mono text-text-muted bg-white/5 px-2 py-1 rounded">
-                <Timer className="w-4 h-4" />
-                <span>Running...</span>
+            <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm font-mono text-text-muted bg-white/5 px-2 py-1 rounded">
+                    <Timer className="w-4 h-4" />
+                    <span>Running...</span>
+                </div>
+                <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                        if (confirm('Cancel this workout? All progress will be lost.')) {
+                            useWorkoutStore.getState().resetWorkout()
+                            router.push('/')
+                        }
+                    }}
+                    className="text-error hover:bg-error/10"
+                >
+                    Cancel
+                </Button>
             </div>
         </div>
 
