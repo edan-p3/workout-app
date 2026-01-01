@@ -13,6 +13,10 @@ export function WorkoutStarter({ onStart }: WorkoutStarterProps) {
     { name: "Push Day", desc: "Chest, Shoulders, Triceps", type: "Push" },
     { name: "Pull Day", desc: "Back, Biceps, Rear Delts", type: "Pull" },
     { name: "Leg Day", desc: "Quads, Hamstrings, Calves", type: "Legs" },
+    { name: "Cardio Day", desc: "Running, Cycling, Rowing", type: "Cardio" },
+    { name: "Pilates", desc: "Core, Flexibility, Balance", type: "Pilates" },
+    { name: "Yoga", desc: "Stretching, Mindfulness, Flow", type: "Yoga" },
+    { name: "HIIT", desc: "High Intensity Interval Training", type: "HIIT" },
   ]
 
   return (
