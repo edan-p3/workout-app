@@ -214,14 +214,17 @@ export const useWorkoutStore = create<WorkoutState>()(
               }
               
               // Update gamification data
-              const { data: currentGamification } = await supabase
+              const { data: currentGamification, error: gamError } = await supabase
                 .from('gamification_data')
                 .select('*')
                 .eq('user_id', user.id)
                 .single()
 
-              if (currentGamification) {
-                await supabase
+              if (gamError) {
+                console.error('Error fetching gamification data:', gamError)
+              } else if (currentGamification) {
+                console.log('Current gamification before update:', currentGamification)
+                const { data: updatedGam, error: updateError } = await supabase
                   .from('gamification_data')
                   .update({
                     total_workouts: currentGamification.total_workouts + 1,
@@ -229,6 +232,15 @@ export const useWorkoutStore = create<WorkoutState>()(
                     total_points: currentGamification.total_points + 100
                   })
                   .eq('user_id', user.id)
+                  .select()
+
+                if (updateError) {
+                  console.error('Error updating gamification data:', updateError)
+                } else {
+                  console.log('Gamification updated successfully:', updatedGam)
+                }
+              } else {
+                console.error('No gamification data found for user')
               }
             }
           }

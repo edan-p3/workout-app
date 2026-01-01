@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
-import { LogOut, ChevronRight, Moon, X } from "lucide-react"
+import { LogOut, ChevronRight, Moon, X, RefreshCw } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
 
 interface UserSettings {
@@ -27,6 +27,7 @@ export default function ProfilePage() {
   const [settings, setSettings] = useState<UserSettings>({ units: 'lbs', restTimer: 90, theme: 'dark' })
   const [gamification, setGamification] = useState<GamificationData>({ total_workouts: 0, current_streak: 0, total_points: 0 })
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [showEditProfile, setShowEditProfile] = useState(false)
   const [showSubscription, setShowSubscription] = useState(false)
   const [showUnitsModal, setShowUnitsModal] = useState(false)
@@ -37,8 +38,19 @@ export default function ProfilePage() {
     loadUserData()
   }, [])
 
+  // Refresh data when page becomes visible
+  useEffect(() => {
+    const handleFocus = () => {
+      loadUserData()
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
+
   const loadUserData = async () => {
     try {
+      setRefreshing(true)
       // Get current user
       const { data: { user: currentUser } } = await supabase.auth.getUser()
       
@@ -62,13 +74,16 @@ export default function ProfilePage() {
       }
 
       // Load gamification data
-      const { data: gamData } = await supabase
+      const { data: gamData, error: gamError } = await supabase
         .from('gamification_data')
         .select('*')
         .eq('user_id', currentUser.id)
         .single()
 
-      if (gamData) {
+      if (gamError) {
+        console.error('Error loading gamification data:', gamError)
+      } else if (gamData) {
+        console.log('Loaded gamification data:', gamData)
         setGamification({
           total_workouts: gamData.total_workouts,
           current_streak: gamData.current_streak,
@@ -79,6 +94,7 @@ export default function ProfilePage() {
       console.error('Error loading user data:', error)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }
 
@@ -148,10 +164,18 @@ export default function ProfilePage() {
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
               {getInitials(displayName)}
           </div>
-          <div>
+          <div className="flex-1">
               <h1 className="text-2xl font-heading font-bold text-white">{displayName}</h1>
               <p className="text-text-muted">Pro Member</p>
           </div>
+          <button
+            onClick={loadUserData}
+            disabled={refreshing}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+            aria-label="Refresh data"
+          >
+            <RefreshCw className={`w-5 h-5 text-text-muted hover:text-primary ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
         </div>
 
         {/* Stats Summary */}
