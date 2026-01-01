@@ -227,9 +227,28 @@ export const useWorkoutStore = create<WorkoutState>()(
       updateHistoryWorkout: (workoutId, updatedWorkout) => set((state) => ({
         history: state.history.map(w => w.id === workoutId ? updatedWorkout : w)
       })),
-      deleteWorkout: (workoutId) => set((state) => ({
-        history: state.history.filter(w => w.id !== workoutId)
-      })),
+      deleteWorkout: async (workoutId) => {
+        // Delete from database first
+        try {
+          const { error } = await supabase
+            .from('workouts')
+            .delete()
+            .eq('id', workoutId)
+
+          if (error) {
+            console.error('Error deleting workout from database:', error)
+            return
+          }
+        } catch (error) {
+          console.error('Error in deleteWorkout:', error)
+          return
+        }
+
+        // Then update local state
+        set((state) => ({
+          history: state.history.filter(w => w.id !== workoutId)
+        }))
+      },
       loadWorkoutsFromDatabase: async () => {
         try {
           const { data: { user } } = await supabase.auth.getUser()
