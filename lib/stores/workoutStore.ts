@@ -212,6 +212,24 @@ export const useWorkoutStore = create<WorkoutState>()(
                   }
                 }
               }
+              
+              // Update gamification data
+              const { data: currentGamification } = await supabase
+                .from('gamification_data')
+                .select('*')
+                .eq('user_id', user.id)
+                .single()
+
+              if (currentGamification) {
+                await supabase
+                  .from('gamification_data')
+                  .update({
+                    total_workouts: currentGamification.total_workouts + 1,
+                    current_streak: currentGamification.current_streak + 1,
+                    total_points: currentGamification.total_points + 100
+                  })
+                  .eq('user_id', user.id)
+              }
             }
           }
         } catch (error) {
