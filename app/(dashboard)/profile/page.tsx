@@ -103,6 +103,7 @@ export default function ProfilePage() {
             .update({
               total_workouts: actualWorkoutCount,
               total_points: actualWorkoutCount * 100,
+              current_streak: actualWorkoutCount > 0 ? gamData.current_streak : 0, // Reset streak if no workouts
               updated_at: new Date().toISOString()
             })
             .eq('user_id', currentUser.id)

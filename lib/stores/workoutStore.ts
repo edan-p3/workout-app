@@ -283,12 +283,15 @@ export const useWorkoutStore = create<WorkoutState>()(
             .single()
 
           if (!gamError && currentGamification) {
+            const newWorkoutCount = Math.max(0, currentGamification.total_workouts - 1)
+            const newPoints = Math.max(0, currentGamification.total_points - 100)
+            
             await supabase
               .from('gamification_data')
               .update({
-                total_workouts: Math.max(0, currentGamification.total_workouts - 1),
-                current_streak: Math.max(0, currentGamification.current_streak - 1),
-                total_points: Math.max(0, currentGamification.total_points - 100)
+                total_workouts: newWorkoutCount,
+                current_streak: newWorkoutCount === 0 ? 0 : Math.max(0, currentGamification.current_streak - 1), // Reset streak if no workouts left
+                total_points: newPoints
               })
               .eq('user_id', user.id)
             
