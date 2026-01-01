@@ -74,6 +74,14 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Brand Header */}
+      <div className="text-center pt-2">
+        <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-primary via-blue-500 to-primary bg-clip-text text-transparent">
+          Rep It!
+        </h1>
+        <p className="text-text-muted text-xs uppercase tracking-widest mt-1">Every Rep Counts</p>
+      </div>
+
       {/* Hero / Streak */}
       <section className="text-center py-6">
         <p className="text-text-muted uppercase text-xs tracking-widest mb-2 font-medium">

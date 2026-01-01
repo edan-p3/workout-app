@@ -55,11 +55,17 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-8 animate-in fade-in duration-500">
         
         <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-blue-500 shadow-lg mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-blue-500 shadow-lg shadow-primary/30 mb-4">
                 <Dumbbell className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-heading font-bold text-white">Welcome Back</h1>
-            <p className="text-text-muted">Enter your credentials to continue</p>
+            <h1 className="text-4xl font-heading font-bold bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
+                Rep It!
+            </h1>
+            <p className="text-text-secondary text-sm font-medium">Every Rep Counts</p>
+            <div className="pt-4">
+                <h2 className="text-2xl font-bold text-white">Welcome Back</h2>
+                <p className="text-text-muted text-sm mt-1">Enter your credentials to continue</p>
+            </div>
         </div>
 
         <form onSubmit={handleLogin}>
