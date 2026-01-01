@@ -105,8 +105,8 @@ export default function DashboardPage() {
           <h2 className="text-xl font-heading font-bold text-white">Weekly Summary</h2>
           <span className="text-xs text-text-muted">Last 7 Days</span>
         </div>
-        <Card className="grid grid-cols-2 gap-x-12 gap-y-6 justify-items-start">
-          <div className="space-y-1 w-full">
+        <Card className="grid grid-cols-2 gap-x-8 gap-y-6">
+          <div className="space-y-1 w-full pl-4">
             <p className="text-text-muted text-xs uppercase flex items-center">
               Workouts
               <InfoIcon type="workouts" />
@@ -123,7 +123,7 @@ export default function DashboardPage() {
               <TrendingUp className="w-4 h-4 text-success" />
             </div>
           </div>
-          <div className="space-y-1 w-full">
+          <div className="space-y-1 w-full pl-4">
             <p className="text-text-muted text-xs uppercase flex items-center">
               Time
               <InfoIcon type="time" />
