@@ -17,6 +17,7 @@ export default function LogWorkoutPage() {
   const { activeWorkout, startWorkout, addExercise, removeExercise, addSet, finishWorkout } = useWorkoutStore()
   const [isClient, setIsClient] = useState(false)
   const [showExerciseSelector, setShowExerciseSelector] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -31,9 +32,16 @@ export default function LogWorkoutPage() {
 
   const totalVolume = activeWorkout.exercises.reduce((acc, ex) => acc + calculateVolume(ex.sets), 0)
 
-  const handleFinish = () => {
-    finishWorkout()
-    router.push('/') // Redirect to stats/dashboard after finish
+  const handleFinish = async () => {
+    setIsSaving(true)
+    try {
+      await finishWorkout() // Wait for the workout to save to database
+      router.push('/') // Then redirect to stats/dashboard
+    } catch (error) {
+      console.error('Error finishing workout:', error)
+      alert('Error saving workout. Please try again.')
+      setIsSaving(false)
+    }
   }
 
   // 2. Active Workout View
@@ -185,8 +193,12 @@ export default function LogWorkoutPage() {
                 <p className="text-[10px] text-text-muted uppercase tracking-wider">Total Volume</p>
                 <p className="font-mono font-bold text-white text-lg">{totalVolume.toLocaleString()} <span className="text-sm text-text-muted font-sans font-normal">lbs</span></p>
             </div>
-            <Button onClick={handleFinish} className="bg-success hover:bg-success/80 text-bg-primary font-bold px-6">
-                Finish <ChevronRight className="w-4 h-4 ml-1" />
+            <Button 
+              onClick={handleFinish} 
+              disabled={isSaving}
+              className="bg-success hover:bg-success/80 text-bg-primary font-bold px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {isSaving ? 'Saving...' : 'Finish'} <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
         </div>
         </div>
