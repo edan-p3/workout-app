@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2 } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
+import { useWeightStore } from "@/lib/stores/weightStore"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
 
 export default function DashboardPage() {
   const { history, deleteWorkout, loadWorkoutsFromDatabase } = useWorkoutStore()
+  const { getLatestWeight, entries } = useWeightStore()
   const [isClient, setIsClient] = useState(false)
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
   const [selectedWorkout, setSelectedWorkout] = useState<any>(null)
@@ -42,6 +44,14 @@ export default function DashboardPage() {
 
   // Current Streak (Mock logic for now, real logic needs continuous dates)
   const currentStreak = weeklyWorkouts.length > 0 ? weeklyWorkouts.length : 0 
+  
+  // Get current weight
+  const currentWeight = getLatestWeight()
+  
+  // Calculate weight change (comparing latest to second latest)
+  const weightChange = entries.length >= 2 
+    ? (entries[0].weight - entries[1].weight).toFixed(1)
+    : null 
 
   const tooltips = {
     workouts: "Number of workout sessions completed in the last 7 days",
@@ -139,8 +149,12 @@ export default function DashboardPage() {
             </p>
             <Link href="/measurements" className="block hover:opacity-80 transition-opacity">
               <div className="flex items-center gap-1">
-                <p className="text-2xl font-mono font-bold">185</p>
-                <span className="text-xs text-success bg-success/10 px-1.5 py-0.5 rounded">-1.2</span>
+                <p className="text-2xl font-mono font-bold">{currentWeight || '--'}</p>
+                {weightChange && (
+                  <span className={`text-xs ${parseFloat(weightChange) < 0 ? 'text-success bg-success/10' : 'text-warning bg-warning/10'} px-1.5 py-0.5 rounded`}>
+                    {parseFloat(weightChange) > 0 ? '+' : ''}{weightChange}
+                  </span>
+                )}
               </div>
             </Link>
           </div>
