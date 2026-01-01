@@ -164,19 +164,27 @@ export default function DashboardPage() {
       {/* Quick Actions (Replaced old Quick Start) */}
       <section>
         <h2 className="text-xl font-heading font-bold text-white mb-4">Actions</h2>
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-2 gap-3">
              <Link href="/log">
-                <Button className="w-full py-6 flex items-center justify-between group">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-white/20 rounded-full">
-                            <Plus className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="text-left">
-                            <p className="font-bold">Log Workout</p>
-                            <p className="text-xs text-white/80">Start a new session</p>
-                        </div>
+                <Button className="w-full py-6 flex flex-col items-center justify-center gap-2 group">
+                    <div className="p-2 bg-white/20 rounded-full">
+                        <Plus className="w-5 h-5 text-white" />
                     </div>
-                    <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0" />
+                    <div className="text-center">
+                        <p className="font-bold text-sm">Log Workout</p>
+                        <p className="text-xs text-white/80">Start a session</p>
+                    </div>
+                </Button>
+             </Link>
+             <Link href="/leaderboard">
+                <Button variant="outline" className="w-full py-6 flex flex-col items-center justify-center gap-2 group border-yellow-400/30 hover:border-yellow-400 hover:bg-yellow-400/10">
+                    <div className="p-2 bg-yellow-400/20 rounded-full">
+                        <Trophy className="w-5 h-5 text-yellow-400" />
+                    </div>
+                    <div className="text-center">
+                        <p className="font-bold text-sm text-white">Leaderboard</p>
+                        <p className="text-xs text-text-muted">See rankings</p>
+                    </div>
                 </Button>
              </Link>
         </div>

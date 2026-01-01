@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { TrendingUp, Plus, Calendar, User } from "lucide-react"
+import { TrendingUp, Plus, Calendar, User, Trophy } from "lucide-react"
 import { cn } from "@/lib/utils/cn"
 
 export function BottomTabBar() {
@@ -13,6 +13,11 @@ export function BottomTabBar() {
       name: "Stats",
       href: "/",
       icon: TrendingUp,
+    },
+    {
+      name: "Rank",
+      href: "/leaderboard",
+      icon: Trophy,
     },
     {
       name: "Log",
