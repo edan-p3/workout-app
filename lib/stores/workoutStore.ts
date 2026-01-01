@@ -143,8 +143,9 @@ export const useWorkoutStore = create<WorkoutState>()(
       finishWorkout: () => set(async (state) => {
         if (!state.activeWorkout || !state.activeWorkout.startTime) return state
         
+        const startTime = new Date(state.activeWorkout.startTime)
         const endTime = new Date()
-        const durationMs = endTime.getTime() - new Date(state.activeWorkout.startTime).getTime()
+        const durationMs = endTime.getTime() - startTime.getTime()
         const totalVolume = state.activeWorkout.exercises.reduce((acc, ex) => acc + calculateVolume(ex.sets), 0)
 
         const completedWorkout: CompletedWorkout = {
@@ -167,8 +168,8 @@ export const useWorkoutStore = create<WorkoutState>()(
               .from('workouts')
               .insert({
                 user_id: user.id,
-                workout_date: new Date(state.activeWorkout.startTime).toISOString().split('T')[0],
-                start_time: state.activeWorkout.startTime.toISOString(),
+                workout_date: startTime.toISOString().split('T')[0],
+                start_time: startTime.toISOString(),
                 end_time: endTime.toISOString(),
                 is_completed: true,
                 notes: state.activeWorkout.name
