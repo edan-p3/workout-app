@@ -105,7 +105,7 @@ export default function DashboardPage() {
           <h2 className="text-xl font-heading font-bold text-white">Weekly Summary</h2>
           <span className="text-xs text-text-muted">Last 7 Days</span>
         </div>
-        <Card className="grid grid-cols-2 gap-4">
+        <Card className="grid grid-cols-2 gap-x-6 gap-y-4">
           <div className="space-y-1">
             <p className="text-text-muted text-xs uppercase flex items-center">
               Workouts
