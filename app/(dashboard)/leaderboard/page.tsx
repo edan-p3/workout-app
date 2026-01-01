@@ -13,6 +13,7 @@ interface LeaderboardUser {
   current_streak: number
   total_points: number
   users?: {
+    email: string
     settings: any
   }
 }
@@ -49,6 +50,7 @@ export default function LeaderboardPage() {
         .select(`
           *,
           users (
+            email,
             settings
           )
         `)
@@ -77,7 +79,22 @@ export default function LeaderboardPage() {
   }
 
   const getUserName = (userData: LeaderboardUser) => {
-    return userData.users?.settings?.full_name || 'Anonymous'
+    // Try to get first name from full_name
+    const fullName = userData.users?.settings?.full_name
+    if (fullName) {
+      const firstName = fullName.split(' ')[0]
+      return firstName
+    }
+    
+    // Fallback to email username (part before @)
+    const email = userData.users?.email
+    if (email) {
+      const username = email.split('@')[0]
+      // Capitalize first letter
+      return username.charAt(0).toUpperCase() + username.slice(1)
+    }
+    
+    return 'Anonymous'
   }
 
   const getValue = (userData: LeaderboardUser) => {
