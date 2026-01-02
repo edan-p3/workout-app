@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
-import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info, Edit, BookOpen } from "lucide-react"
+import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info, Edit, BookOpen, Save } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { useWeightStore } from "@/lib/stores/weightStore"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
@@ -13,6 +13,7 @@ import { WORKOUT_TEMPLATES, type WorkoutTemplate } from "@/lib/data/workoutTempl
 import { getExerciseInstructions } from "@/lib/data/exerciseInstructions"
 import { useRouter } from "next/navigation"
 import { TutorialModal } from "@/components/TutorialModal"
+import { supabase } from "@/lib/supabase/client"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -30,6 +31,7 @@ export default function DashboardPage() {
   const [editWorkoutDate, setEditWorkoutDate] = useState('')
   const [showTutorial, setShowTutorial] = useState(false)
   const [editedWorkout, setEditedWorkout] = useState<any>(null)
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -410,29 +412,74 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {isEditingWorkout ? (
-                    <button 
-                      onClick={async () => {
-                        if (!editedWorkout) return
-                        
-                        // Save the edited workout
-                        const updatedWorkout = {
-                          ...editedWorkout,
-                          endTime: new Date(editWorkoutDate + 'T' + new Date(editedWorkout.endTime).toTimeString().split(' ')[0]),
-                          startTime: new Date(editWorkoutDate + 'T' + new Date(editedWorkout.startTime).toTimeString().split(' ')[0])
-                        }
-                        
-                        await useWorkoutStore.getState().updateHistoryWorkout(selectedWorkout.id, updatedWorkout)
-                        setSelectedWorkout(updatedWorkout)
-                        setIsEditingWorkout(false)
-                        setEditedWorkout(null)
-                      }}
-                      className="px-3 py-1.5 bg-primary hover:bg-primary/80 text-white rounded-lg transition-colors text-sm font-medium"
-                    >
-                      Save Changes
-                    </button>
+                    <>
+                      <button 
+                        onClick={() => {
+                          setIsEditingWorkout(false)
+                          setEditedWorkout(null)
+                          setIsSaving(false)
+                        }}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={async (e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          
+                          console.log('Save button clicked!')
+                          
+                          if (!editedWorkout) {
+                            console.error('No editedWorkout')
+                            alert('No workout data to save')
+                            return
+                          }
+                          
+                          setIsSaving(true)
+                          
+                          try {
+                            console.log('Updating workout with date:', editWorkoutDate)
+                            
+                            // Create updated workout with new date
+                            const updatedWorkout = {
+                              ...editedWorkout,
+                              endTime: new Date(editWorkoutDate + 'T' + new Date(editedWorkout.endTime).toTimeString().split(' ')[0]),
+                              startTime: new Date(editWorkoutDate + 'T' + new Date(editedWorkout.startTime).toTimeString().split(' ')[0])
+                            }
+                            
+                            console.log('Calling updateHistoryWorkout...')
+                            await useWorkoutStore.getState().updateHistoryWorkout(selectedWorkout.id, updatedWorkout)
+                            
+                            console.log('Update successful!')
+                            setSelectedWorkout(updatedWorkout)
+                            setIsEditingWorkout(false)
+                            setEditedWorkout(null)
+                          } catch (error) {
+                            console.error('Error saving workout:', error)
+                            alert('Failed to save workout. Please try again.')
+                          } finally {
+                            setIsSaving(false)
+                          }
+                        }}
+                        disabled={isSaving}
+                        className="px-3 py-1.5 bg-primary hover:bg-primary/80 text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSaving ? (
+                          <>Saving...</>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4" />
+                            Save Changes
+                          </>
+                        )}
+                      </button>
+                    </>
                   ) : (
                     <button 
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
                         setIsEditingWorkout(true)
                         setEditWorkoutDate(new Date(selectedWorkout.endTime).toISOString().split('T')[0])
                         setEditedWorkout(JSON.parse(JSON.stringify(selectedWorkout))) // Deep copy
@@ -524,15 +571,28 @@ export default function DashboardPage() {
                           <span className="text-xs text-text-muted uppercase">{exercise.bodyPart}</span>
                         )}
                       </div>
+                      {isEditingWorkout && (
+                        <button
+                          onClick={() => {
+                            const newWorkout = JSON.parse(JSON.stringify(editedWorkout))
+                            newWorkout.exercises = newWorkout.exercises.filter((ex: any) => ex.id !== exercise.id)
+                            setEditedWorkout(newWorkout)
+                          }}
+                          className="p-1 hover:bg-error/20 text-error rounded transition-colors"
+                          aria-label="Remove exercise"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
 
                     <div className="space-y-2">
                       {exercise.sets.filter((s: any) => s.completed).map((set: any, setIdx: number) => (
                         <div key={set.id} className={`rounded-lg p-3 text-sm ${isEditingWorkout ? 'bg-white/10' : 'bg-white/5'}`}>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between gap-2">
                             <span className="text-text-muted">Set {setIdx + 1}</span>
                             {isEditingWorkout ? (
-                              <div className="flex gap-2 items-center">
+                              <div className="flex gap-2 items-center flex-1 justify-end">
                                 {isCardioMachine ? (
                                   <>
                                     <Input
@@ -613,6 +673,17 @@ export default function DashboardPage() {
                                     />
                                   </>
                                 )}
+                                <button
+                                  onClick={() => {
+                                    const newWorkout = JSON.parse(JSON.stringify(editedWorkout))
+                                    newWorkout.exercises[exIdx].sets = newWorkout.exercises[exIdx].sets.filter((s: any) => s.id !== set.id)
+                                    setEditedWorkout(newWorkout)
+                                  }}
+                                  className="p-1 hover:bg-error/20 text-error rounded transition-colors flex-shrink-0"
+                                  aria-label="Remove set"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
                               </div>
                             ) : (
                               <div className="font-mono text-white">
