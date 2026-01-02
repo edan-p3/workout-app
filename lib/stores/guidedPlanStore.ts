@@ -87,27 +87,38 @@ export const useGuidedPlanStore = create<GuidedPlanState>()(
             .eq('is_active', true)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single()
           
-          if (error) {
+          // Error handling - ignore "no rows" error (PGRST116)
+          if (error && error.code !== 'PGRST116') {
             console.error('Error loading plan from database:', error)
             return
           }
           
-          if (data && data.plan_data) {
+          // If no data or empty array, user doesn't have a plan yet
+          if (!data || data.length === 0) {
+            console.log('No guided plan found for user')
+            set({ currentPlan: null })
+            return
+          }
+          
+          // Get the first plan from the array
+          const planData = data[0]
+          
+          if (planData && planData.plan_data) {
             // Reconstruct the plan from database
             const plan: GuidedPlan = {
-              id: data.id,
+              id: planData.id,
               userId: user.id,
-              name: data.name,
-              description: data.description || '',
-              weeklySchedule: data.plan_data.weeklySchedule,
-              currentWeek: data.current_week,
-              startedAt: new Date(data.started_at),
-              input: data.plan_data.input,
-              progressionRules: data.plan_data.progressionRules
+              name: planData.name,
+              description: planData.description || '',
+              weeklySchedule: planData.plan_data.weeklySchedule,
+              currentWeek: planData.current_week,
+              startedAt: new Date(planData.started_at),
+              input: planData.plan_data.input,
+              progressionRules: planData.plan_data.progressionRules
             }
             
+            console.log('Guided plan loaded successfully:', plan.name)
             set({ currentPlan: plan })
           }
         } catch (error) {
