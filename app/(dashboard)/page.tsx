@@ -412,13 +412,16 @@ export default function DashboardPage() {
                   {isEditingWorkout ? (
                     <button 
                       onClick={async () => {
+                        if (!editedWorkout) return
+                        
                         // Save the edited workout
                         const updatedWorkout = {
                           ...editedWorkout,
                           endTime: new Date(editWorkoutDate + 'T' + new Date(editedWorkout.endTime).toTimeString().split(' ')[0]),
                           startTime: new Date(editWorkoutDate + 'T' + new Date(editedWorkout.startTime).toTimeString().split(' ')[0])
                         }
-                        await useWorkoutStore.getState().updateWorkoutInHistory(updatedWorkout)
+                        
+                        await useWorkoutStore.getState().updateHistoryWorkout(selectedWorkout.id, updatedWorkout)
                         setSelectedWorkout(updatedWorkout)
                         setIsEditingWorkout(false)
                         setEditedWorkout(null)
@@ -536,8 +539,9 @@ export default function DashboardPage() {
                                       type="number"
                                       value={set.distance || ''}
                                       onChange={(e) => {
-                                        const newWorkout = {...editedWorkout}
-                                        newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).distance = parseFloat(e.target.value) || 0
+                                        const newWorkout = JSON.parse(JSON.stringify(editedWorkout))
+                                        const targetSet = newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id)
+                                        if (targetSet) targetSet.distance = parseFloat(e.target.value) || 0
                                         setEditedWorkout(newWorkout)
                                       }}
                                       placeholder="mi"
@@ -547,8 +551,9 @@ export default function DashboardPage() {
                                       type="number"
                                       value={set.duration || ''}
                                       onChange={(e) => {
-                                        const newWorkout = {...editedWorkout}
-                                        newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).duration = parseInt(e.target.value) || 0
+                                        const newWorkout = JSON.parse(JSON.stringify(editedWorkout))
+                                        const targetSet = newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id)
+                                        if (targetSet) targetSet.duration = parseInt(e.target.value) || 0
                                         setEditedWorkout(newWorkout)
                                       }}
                                       placeholder="min"
@@ -558,8 +563,9 @@ export default function DashboardPage() {
                                       type="number"
                                       value={set.calories || ''}
                                       onChange={(e) => {
-                                        const newWorkout = {...editedWorkout}
-                                        newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).calories = parseInt(e.target.value) || 0
+                                        const newWorkout = JSON.parse(JSON.stringify(editedWorkout))
+                                        const targetSet = newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id)
+                                        if (targetSet) targetSet.calories = parseInt(e.target.value) || 0
                                         setEditedWorkout(newWorkout)
                                       }}
                                       placeholder="cal"
@@ -571,8 +577,9 @@ export default function DashboardPage() {
                                     type="number"
                                     value={set.duration || ''}
                                     onChange={(e) => {
-                                      const newWorkout = {...editedWorkout}
-                                      newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).duration = parseInt(e.target.value) || 0
+                                      const newWorkout = JSON.parse(JSON.stringify(editedWorkout))
+                                      const targetSet = newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id)
+                                      if (targetSet) targetSet.duration = parseInt(e.target.value) || 0
                                       setEditedWorkout(newWorkout)
                                     }}
                                     placeholder="minutes"
@@ -584,8 +591,9 @@ export default function DashboardPage() {
                                       type="number"
                                       value={set.weight || ''}
                                       onChange={(e) => {
-                                        const newWorkout = {...editedWorkout}
-                                        newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).weight = parseFloat(e.target.value) || 0
+                                        const newWorkout = JSON.parse(JSON.stringify(editedWorkout))
+                                        const targetSet = newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id)
+                                        if (targetSet) targetSet.weight = parseFloat(e.target.value) || 0
                                         setEditedWorkout(newWorkout)
                                       }}
                                       placeholder="lbs"
@@ -595,8 +603,9 @@ export default function DashboardPage() {
                                       type="number"
                                       value={set.reps || ''}
                                       onChange={(e) => {
-                                        const newWorkout = {...editedWorkout}
-                                        newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).reps = parseInt(e.target.value) || 0
+                                        const newWorkout = JSON.parse(JSON.stringify(editedWorkout))
+                                        const targetSet = newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id)
+                                        if (targetSet) targetSet.reps = parseInt(e.target.value) || 0
                                         setEditedWorkout(newWorkout)
                                       }}
                                       placeholder="reps"

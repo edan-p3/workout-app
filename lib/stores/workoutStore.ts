@@ -45,7 +45,7 @@ export type WorkoutState = {
   completeSet: (exerciseId: string, setId: string) => void
   finishWorkout: () => Promise<void>
   resetWorkout: () => void
-  updateHistoryWorkout: (workoutId: string, updatedWorkout: CompletedWorkout) => void
+  updateHistoryWorkout: (workoutId: string, updatedWorkout: CompletedWorkout) => Promise<void>
   deleteWorkout: (workoutId: string) => void
   loadWorkoutsFromDatabase: () => Promise<void>
 }
@@ -255,9 +255,77 @@ export const useWorkoutStore = create<WorkoutState>()(
         }
       }), 
       resetWorkout: () => set({ activeWorkout: null }),
-      updateHistoryWorkout: (workoutId, updatedWorkout) => set((state) => ({
-        history: state.history.map(w => w.id === workoutId ? updatedWorkout : w)
-      })),
+      updateHistoryWorkout: async (workoutId, updatedWorkout) => {
+        // Update in database first
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          
+          if (!user) return
+
+          // Update the workout in the database
+          const { error: workoutError } = await supabase
+            .from('workouts')
+            .update({
+              workout_date: new Date(updatedWorkout.endTime).toISOString().split('T')[0],
+              start_time: new Date(updatedWorkout.startTime).toISOString(),
+              end_time: new Date(updatedWorkout.endTime).toISOString(),
+              duration_ms: updatedWorkout.durationMs,
+            })
+            .eq('id', workoutId)
+
+          if (workoutError) {
+            console.error('Error updating workout in database:', workoutError)
+            return
+          }
+
+          // Update exercises and sets
+          for (const exercise of updatedWorkout.exercises) {
+            // Update exercise
+            const { error: exerciseError } = await supabase
+              .from('exercises')
+              .update({
+                name: exercise.name,
+                body_part: exercise.bodyPart,
+                category: exercise.category,
+              })
+              .eq('id', exercise.id)
+
+            if (exerciseError) {
+              console.error('Error updating exercise:', exerciseError)
+              continue
+            }
+
+            // Update sets
+            for (const set of exercise.sets) {
+              const { error: setError } = await supabase
+                .from('exercise_sets')
+                .update({
+                  weight: set.weight || 0,
+                  reps: set.reps || 0,
+                  duration: set.duration || 0,
+                  distance: set.distance || 0,
+                  calories: set.calories || 0,
+                  completed: set.completed,
+                })
+                .eq('id', set.id)
+
+              if (setError) {
+                console.error('Error updating set:', setError)
+              }
+            }
+          }
+
+          console.log('Workout updated successfully in database')
+        } catch (error) {
+          console.error('Error updating workout:', error)
+          return
+        }
+
+        // Update local state
+        set((state) => ({
+          history: state.history.map(w => w.id === workoutId ? updatedWorkout : w)
+        }))
+      },
       deleteWorkout: async (workoutId) => {
         // Delete from database first
         try {
