@@ -26,6 +26,10 @@ export default function LogWorkoutPage() {
     setIsClient(true)
   }, [])
 
+  useEffect(() => {
+    console.log('Log page - activeWorkout changed:', activeWorkout ? activeWorkout.name : 'null')
+  }, [activeWorkout])
+
   if (!isClient) return null
 
   // 1. No active workout -> Show Starter Selection
@@ -38,7 +42,15 @@ export default function LogWorkoutPage() {
   const handleFinish = async () => {
     setIsSaving(true)
     try {
+      console.log('Finishing workout...')
       await finishWorkout() // Wait for the workout to save to database
+      console.log('Workout finished, activeWorkout should be null now')
+      console.log('Current activeWorkout:', useWorkoutStore.getState().activeWorkout)
+      
+      // Force a small delay to ensure state propagates
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      console.log('Redirecting to dashboard...')
       router.push('/') // Then redirect to stats/dashboard
     } catch (error) {
       console.error('Error finishing workout:', error)
