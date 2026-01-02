@@ -799,7 +799,7 @@ export default function DashboardPage() {
               {!selectedCategory ? (
                 /* Category Selection */
                 <div className="p-4 space-y-2">
-                  {EXERCISE_CATEGORIES.map((category) => (
+                  {Object.values(EXERCISE_CATEGORIES).map((category) => (
                     <button
                       key={category}
                       onClick={() => setSelectedCategory(category)}
@@ -807,7 +807,7 @@ export default function DashboardPage() {
                     >
                       <h3 className="font-bold text-white">{category}</h3>
                       <p className="text-xs text-text-muted mt-1">
-                        {EXERCISE_DATABASE.filter(ex => ex.bodyPart === category).length} exercises
+                        {EXERCISE_DATABASE.filter(ex => ex.category === category).length} exercises
                       </p>
                     </button>
                   ))}
@@ -822,7 +822,7 @@ export default function DashboardPage() {
                     ← Back to Categories
                   </button>
                   {EXERCISE_DATABASE
-                    .filter(ex => ex.bodyPart === selectedCategory)
+                    .filter(ex => ex.category === selectedCategory)
                     .filter(ex => searchQuery === '' || ex.name.toLowerCase().includes(searchQuery.toLowerCase()))
                     .map((exercise) => (
                       <button
@@ -833,7 +833,7 @@ export default function DashboardPage() {
                           newWorkout.exercises.push({
                             id: crypto.randomUUID(),
                             name: exercise.name,
-                            bodyPart: exercise.bodyPart,
+                            bodyPart: exercise.category,
                             category: exercise.category,
                             sets: [{
                               id: crypto.randomUUID(),
