@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
+import { Input } from "@/components/ui/Input"
 import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info, Edit, BookOpen } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { useWeightStore } from "@/lib/stores/weightStore"
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const [isEditingWorkout, setIsEditingWorkout] = useState(false)
   const [editWorkoutDate, setEditWorkoutDate] = useState('')
   const [showTutorial, setShowTutorial] = useState(false)
+  const [editedWorkout, setEditedWorkout] = useState<any>(null)
 
   useEffect(() => {
     setIsClient(true)
@@ -410,25 +412,27 @@ export default function DashboardPage() {
                   {isEditingWorkout ? (
                     <button 
                       onClick={async () => {
-                        // Save the edited workout date
+                        // Save the edited workout
                         const updatedWorkout = {
-                          ...selectedWorkout,
-                          endTime: new Date(editWorkoutDate + 'T' + new Date(selectedWorkout.endTime).toTimeString().split(' ')[0]),
-                          startTime: new Date(editWorkoutDate + 'T' + new Date(selectedWorkout.startTime).toTimeString().split(' ')[0])
+                          ...editedWorkout,
+                          endTime: new Date(editWorkoutDate + 'T' + new Date(editedWorkout.endTime).toTimeString().split(' ')[0]),
+                          startTime: new Date(editWorkoutDate + 'T' + new Date(editedWorkout.startTime).toTimeString().split(' ')[0])
                         }
                         await useWorkoutStore.getState().updateWorkoutInHistory(updatedWorkout)
                         setSelectedWorkout(updatedWorkout)
                         setIsEditingWorkout(false)
+                        setEditedWorkout(null)
                       }}
                       className="px-3 py-1.5 bg-primary hover:bg-primary/80 text-white rounded-lg transition-colors text-sm font-medium"
                     >
-                      Save
+                      Save Changes
                     </button>
                   ) : (
                     <button 
                       onClick={() => {
                         setIsEditingWorkout(true)
                         setEditWorkoutDate(new Date(selectedWorkout.endTime).toISOString().split('T')[0])
+                        setEditedWorkout(JSON.parse(JSON.stringify(selectedWorkout))) // Deep copy
                       }}
                       className="p-2 hover:bg-primary/20 text-primary rounded-lg transition-colors"
                       aria-label="Edit workout"
@@ -501,8 +505,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="p-4 space-y-4 pb-6">
-              {selectedWorkout.exercises.map((exercise: any) => {
-                const cardioMachines = ['treadmill', 'elliptical', 'cycling', 'rowing', 'stairmaster', 'bike']
+              {(isEditingWorkout ? editedWorkout : selectedWorkout).exercises.map((exercise: any, exIdx: number) => {
+                const cardioMachines = ['treadmill', 'elliptical', 'cycling', 'rowing', 'stairmaster', 'bike', 'walking']
                 const isCardioMachine = exercise.name && cardioMachines.some((machine: string) => 
                   exercise.name.toLowerCase().includes(machine)
                 )
@@ -520,21 +524,100 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="space-y-2">
-                      {exercise.sets.filter((s: any) => s.completed).map((set: any, idx: number) => (
-                        <div key={set.id} className="bg-white/5 rounded-lg p-3 text-sm">
+                      {exercise.sets.filter((s: any) => s.completed).map((set: any, setIdx: number) => (
+                        <div key={set.id} className={`rounded-lg p-3 text-sm ${isEditingWorkout ? 'bg-white/10' : 'bg-white/5'}`}>
                           <div className="flex items-center justify-between">
-                            <span className="text-text-muted">Set {idx + 1}</span>
-                            <div className="font-mono text-white">
-                              {set.weight > 0 && set.reps > 0 && (
-                                <span>{set.weight} lbs × {set.reps} reps</span>
-                              )}
-                              {set.duration > 0 && !set.distance && (
-                                <span>{set.duration} min</span>
-                              )}
-                              {set.distance > 0 && (
-                                <span>{set.distance} mi • {set.duration} min{set.calories > 0 && ` • ${set.calories} cal`}</span>
-                              )}
-                            </div>
+                            <span className="text-text-muted">Set {setIdx + 1}</span>
+                            {isEditingWorkout ? (
+                              <div className="flex gap-2 items-center">
+                                {isCardioMachine ? (
+                                  <>
+                                    <Input
+                                      type="number"
+                                      value={set.distance || ''}
+                                      onChange={(e) => {
+                                        const newWorkout = {...editedWorkout}
+                                        newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).distance = parseFloat(e.target.value) || 0
+                                        setEditedWorkout(newWorkout)
+                                      }}
+                                      placeholder="mi"
+                                      className="w-16 text-xs p-1"
+                                    />
+                                    <Input
+                                      type="number"
+                                      value={set.duration || ''}
+                                      onChange={(e) => {
+                                        const newWorkout = {...editedWorkout}
+                                        newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).duration = parseInt(e.target.value) || 0
+                                        setEditedWorkout(newWorkout)
+                                      }}
+                                      placeholder="min"
+                                      className="w-16 text-xs p-1"
+                                    />
+                                    <Input
+                                      type="number"
+                                      value={set.calories || ''}
+                                      onChange={(e) => {
+                                        const newWorkout = {...editedWorkout}
+                                        newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).calories = parseInt(e.target.value) || 0
+                                        setEditedWorkout(newWorkout)
+                                      }}
+                                      placeholder="cal"
+                                      className="w-16 text-xs p-1"
+                                    />
+                                  </>
+                                ) : isTimeBased ? (
+                                  <Input
+                                    type="number"
+                                    value={set.duration || ''}
+                                    onChange={(e) => {
+                                      const newWorkout = {...editedWorkout}
+                                      newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).duration = parseInt(e.target.value) || 0
+                                      setEditedWorkout(newWorkout)
+                                    }}
+                                    placeholder="minutes"
+                                    className="w-20 text-xs p-1"
+                                  />
+                                ) : (
+                                  <>
+                                    <Input
+                                      type="number"
+                                      value={set.weight || ''}
+                                      onChange={(e) => {
+                                        const newWorkout = {...editedWorkout}
+                                        newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).weight = parseFloat(e.target.value) || 0
+                                        setEditedWorkout(newWorkout)
+                                      }}
+                                      placeholder="lbs"
+                                      className="w-16 text-xs p-1"
+                                    />
+                                    <Input
+                                      type="number"
+                                      value={set.reps || ''}
+                                      onChange={(e) => {
+                                        const newWorkout = {...editedWorkout}
+                                        newWorkout.exercises[exIdx].sets.find((s: any) => s.id === set.id).reps = parseInt(e.target.value) || 0
+                                        setEditedWorkout(newWorkout)
+                                      }}
+                                      placeholder="reps"
+                                      className="w-16 text-xs p-1"
+                                    />
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="font-mono text-white">
+                                {set.weight > 0 && set.reps > 0 && (
+                                  <span>{set.weight} lbs × {set.reps} reps</span>
+                                )}
+                                {set.duration > 0 && !set.distance && (
+                                  <span>{set.duration} min</span>
+                                )}
+                                {set.distance > 0 && (
+                                  <span>{set.distance} mi • {set.duration} min{set.calories > 0 && ` • ${set.calories} cal`}</span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
