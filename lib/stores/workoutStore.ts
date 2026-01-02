@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { calculateVolume } from '../utils/calculations'
 import { supabase } from '../supabase/client'
+import { useMonthlyGoalStore } from './monthlyGoalStore'
 
 export type Set = {
   id: string
@@ -247,6 +248,14 @@ export const useWorkoutStore = create<WorkoutState>()(
                 }
               } else {
                 console.error('No gamification data found for user')
+              }
+              
+              // Increment monthly goal count
+              try {
+                await useMonthlyGoalStore.getState().incrementWorkoutCount()
+                console.log('Monthly goal count incremented')
+              } catch (error) {
+                console.error('Error incrementing monthly goal:', error)
               }
             }
           }

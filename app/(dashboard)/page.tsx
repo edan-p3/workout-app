@@ -9,6 +9,7 @@ import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { useWeightStore } from "@/lib/stores/weightStore"
 import { useGuidedPlanStore } from "@/lib/stores/guidedPlanStore"
+import { MonthlyGoalCard } from "@/components/MonthlyGoalCard"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
 import { WORKOUT_TEMPLATES, type WorkoutTemplate } from "@/lib/data/workoutTemplates"
 import { getExerciseInstructions } from "@/lib/data/exerciseInstructions"
@@ -242,6 +243,11 @@ export default function DashboardPage() {
           />
         </section>
       )}
+
+      {/* Monthly Goal */}
+      <section>
+        <MonthlyGoalCard />
+      </section>
 
       {/* Weekly Summary */}
       <section>
