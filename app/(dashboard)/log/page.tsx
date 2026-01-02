@@ -21,6 +21,7 @@ export default function LogWorkoutPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null)
   const [showMusicTip, setShowMusicTip] = useState(true)
+  const [elapsedTime, setElapsedTime] = useState(0) // In seconds
 
   useEffect(() => {
     setIsClient(true)
@@ -29,6 +30,39 @@ export default function LogWorkoutPage() {
   useEffect(() => {
     console.log('Log page - activeWorkout changed:', activeWorkout ? activeWorkout.name : 'null')
   }, [activeWorkout])
+
+  // Timer effect - update every second
+  useEffect(() => {
+    if (!activeWorkout?.startTime) return
+
+    const startTime = new Date(activeWorkout.startTime).getTime()
+    
+    const updateTimer = () => {
+      const now = Date.now()
+      const elapsed = Math.floor((now - startTime) / 1000) // Convert to seconds
+      setElapsedTime(elapsed)
+    }
+
+    // Update immediately
+    updateTimer()
+
+    // Then update every second
+    const interval = setInterval(updateTimer, 1000)
+
+    return () => clearInterval(interval)
+  }, [activeWorkout?.startTime])
+
+  // Format time as MM:SS or HH:MM:SS
+  const formatTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600)
+    const mins = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+
+    if (hrs > 0) {
+      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    }
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   if (!isClient) return null
 
@@ -85,9 +119,9 @@ export default function LogWorkoutPage() {
                 <p className="text-xs text-text-muted">{activeWorkout.exercises.length} Exercises</p>
             </div>
             <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm font-mono text-text-muted bg-white/5 px-2 py-1 rounded">
-                    <Timer className="w-4 h-4" />
-                    <span>Running...</span>
+                <div className="flex items-center gap-2 text-lg font-mono font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20">
+                    <Timer className="w-5 h-5 animate-pulse" />
+                    <span>{formatTime(elapsedTime)}</span>
                 </div>
                 <Button 
                     variant="ghost" 
@@ -299,9 +333,15 @@ export default function LogWorkoutPage() {
 
         {/* Bottom Sticky Bar */}
         <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+4rem)] left-0 right-0 p-4 bg-bg-card/95 backdrop-blur border-t border-white/10 flex items-center justify-between max-w-md mx-auto z-40 shadow-xl">
-            <div>
-                <p className="text-[10px] text-text-muted uppercase tracking-wider">Total Volume</p>
+            <div className="flex items-center gap-4">
+              <div>
+                <p className="text-[10px] text-text-muted uppercase tracking-wider">Volume</p>
                 <p className="font-mono font-bold text-white text-lg">{totalVolume.toLocaleString()} <span className="text-sm text-text-muted font-sans font-normal">lbs</span></p>
+              </div>
+              <div className="border-l border-white/10 pl-4">
+                <p className="text-[10px] text-text-muted uppercase tracking-wider">Duration</p>
+                <p className="font-mono font-bold text-primary text-lg">{formatTime(elapsedTime)}</p>
+              </div>
             </div>
             <Button 
               onClick={handleFinish} 
