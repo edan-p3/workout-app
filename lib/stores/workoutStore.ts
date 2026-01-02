@@ -443,8 +443,8 @@ export const useWorkoutStore = create<WorkoutState>()(
                   weight: set.weight || 0,
                   reps: set.reps || 0,
                   duration: set.duration_minutes || 0,
-                  distance: set.distance || 0,
-                  calories: set.calories || 0,
+                  distance: set.distance_miles || 0,
+                  calories: set.calories_burned || 0,
                   completed: set.is_completed
                 })) || []
               })) || []
