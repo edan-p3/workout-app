@@ -81,10 +81,10 @@ export function GuidedPlanWizard({ onComplete, onClose }: GuidedPlanWizardProps)
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-bg-card p-6 border-b border-white/10 z-10">
+    <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="w-full max-w-2xl max-h-[90vh] flex flex-col bg-bg-card rounded-2xl overflow-hidden">
+        {/* Header - Fixed */}
+        <div className="flex-shrink-0 bg-bg-card backdrop-blur-sm p-6 border-b border-white/10 z-10">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-2xl font-bold text-white">Create Your Plan</h2>
@@ -103,8 +103,8 @@ export function GuidedPlanWizard({ onComplete, onClose }: GuidedPlanWizardProps)
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 min-h-[400px]">
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-6 min-h-[400px]">
           {/* Step 1: Fitness Goal */}
           {step === 1 && (
             <div className="space-y-6 animate-in fade-in duration-300">
@@ -410,8 +410,8 @@ export function GuidedPlanWizard({ onComplete, onClose }: GuidedPlanWizardProps)
           )}
         </div>
 
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-bg-card p-6 border-t border-white/10 flex items-center justify-between">
+        {/* Footer - Fixed */}
+        <div className="flex-shrink-0 bg-bg-card backdrop-blur-sm p-6 border-t border-white/10 flex items-center justify-between">
           <Button
             variant="secondary"
             onClick={step === 1 ? onClose : handleBack}
@@ -441,7 +441,7 @@ export function GuidedPlanWizard({ onComplete, onClose }: GuidedPlanWizardProps)
             </Button>
           )}
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
