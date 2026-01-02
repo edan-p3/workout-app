@@ -11,6 +11,7 @@ import { useWeightStore } from "@/lib/stores/weightStore"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
 import { WORKOUT_TEMPLATES, type WorkoutTemplate } from "@/lib/data/workoutTemplates"
 import { getExerciseInstructions } from "@/lib/data/exerciseInstructions"
+import { EXERCISE_DATABASE, EXERCISE_CATEGORIES } from "@/lib/data/exercises"
 import { useRouter } from "next/navigation"
 import { TutorialModal } from "@/components/TutorialModal"
 import { supabase } from "@/lib/supabase/client"
@@ -32,6 +33,9 @@ export default function DashboardPage() {
   const [showTutorial, setShowTutorial] = useState(false)
   const [editedWorkout, setEditedWorkout] = useState<any>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [showAddExercise, setShowAddExercise] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     setIsClient(true)
@@ -451,8 +455,12 @@ export default function DashboardPage() {
                             console.log('Calling updateHistoryWorkout...')
                             await useWorkoutStore.getState().updateHistoryWorkout(selectedWorkout.id, updatedWorkout)
                             
-                            console.log('Update successful!')
-                            setSelectedWorkout(updatedWorkout)
+                            console.log('Update successful! Reloading workouts...')
+                            
+                            // Reload workouts from database to get proper chronological order
+                            await loadWorkoutsFromDatabase()
+                            
+                            setSelectedWorkout(null)
                             setIsEditingWorkout(false)
                             setEditedWorkout(null)
                           } catch (error) {
@@ -705,6 +713,18 @@ export default function DashboardPage() {
                   </div>
                 )
               })}
+              
+              {/* Add Exercise Button in Edit Mode */}
+              {isEditingWorkout && (
+                <Button
+                  onClick={() => setShowAddExercise(true)}
+                  variant="secondary"
+                  className="w-full mt-4"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Exercise
+                </Button>
+              )}
             </div>
           </Card>
         </div>
@@ -741,6 +761,105 @@ export default function DashboardPage() {
               </div>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* Add Exercise Modal */}
+      {showAddExercise && editedWorkout && (
+        <div className="fixed inset-0 z-[70] bg-black flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl h-[90vh] flex flex-col bg-bg-secondary rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+            {/* Fixed Header */}
+            <div className="flex-shrink-0 bg-bg-secondary p-4 border-b border-white/10 shadow-lg">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xl font-bold text-white">Add Exercise</h2>
+                <button 
+                  onClick={() => {
+                    setShowAddExercise(false)
+                    setSelectedCategory(null)
+                    setSearchQuery('')
+                  }}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6 text-text-muted hover:text-white" />
+                </button>
+              </div>
+              
+              {/* Search Bar */}
+              <Input
+                type="text"
+                placeholder="Search exercises..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto bg-bg-primary">
+              {!selectedCategory ? (
+                /* Category Selection */
+                <div className="p-4 space-y-2">
+                  {EXERCISE_CATEGORIES.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
+                      className="w-full p-4 bg-white/5 hover:bg-white/10 rounded-lg text-left transition-colors border border-white/10"
+                    >
+                      <h3 className="font-bold text-white">{category}</h3>
+                      <p className="text-xs text-text-muted mt-1">
+                        {EXERCISE_DATABASE.filter(ex => ex.bodyPart === category).length} exercises
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                /* Exercise List */
+                <div className="p-4 space-y-2">
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className="text-sm text-primary hover:text-primary/80 mb-3"
+                  >
+                    ← Back to Categories
+                  </button>
+                  {EXERCISE_DATABASE
+                    .filter(ex => ex.bodyPart === selectedCategory)
+                    .filter(ex => searchQuery === '' || ex.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map((exercise) => (
+                      <button
+                        key={exercise.name}
+                        onClick={() => {
+                          // Add exercise to editedWorkout
+                          const newWorkout = JSON.parse(JSON.stringify(editedWorkout))
+                          newWorkout.exercises.push({
+                            id: crypto.randomUUID(),
+                            name: exercise.name,
+                            bodyPart: exercise.bodyPart,
+                            category: exercise.category,
+                            sets: [{
+                              id: crypto.randomUUID(),
+                              weight: 0,
+                              reps: 0,
+                              duration: 0,
+                              distance: 0,
+                              calories: 0,
+                              completed: true
+                            }]
+                          })
+                          setEditedWorkout(newWorkout)
+                          setShowAddExercise(false)
+                          setSelectedCategory(null)
+                          setSearchQuery('')
+                        }}
+                        className="w-full p-3 bg-white/5 hover:bg-white/10 rounded-lg text-left transition-colors border border-white/10"
+                      >
+                        <h4 className="font-medium text-white">{exercise.name}</h4>
+                        <p className="text-xs text-text-muted mt-1">{exercise.category}</p>
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
