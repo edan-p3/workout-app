@@ -13,8 +13,10 @@ export function MonthlyGoalCard() {
   const [isEditing, setIsEditing] = useState(false)
   const [goalInput, setGoalInput] = useState('')
   const [showCelebration, setShowCelebration] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
+    setIsClient(true)
     loadCurrentMonthGoal()
   }, [])
 
@@ -46,10 +48,10 @@ export function MonthlyGoalCard() {
     }
   }
 
-  if (isLoading) {
+  if (!isClient || isLoading) {
     return (
-      <Card className="p-6 animate-pulse">
-        <div className="h-32 bg-white/5 rounded-lg"></div>
+      <Card className="p-6">
+        <div className="h-32 bg-white/5 rounded-lg animate-pulse"></div>
       </Card>
     )
   }
