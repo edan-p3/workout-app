@@ -43,6 +43,20 @@ export default function DashboardPage() {
     loadWorkoutsFromDatabase()
   }, [])
 
+  // Reload workouts when returning to the page
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('Dashboard focused, reloading workouts...')
+      loadWorkoutsFromDatabase()
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [loadWorkoutsFromDatabase])
+
   if (!isClient) return null
 
   const handleDelete = () => {
@@ -86,6 +100,19 @@ export default function DashboardPage() {
   const weeklyVolume = weeklyWorkouts.reduce((acc, w) => acc + w.totalVolume, 0)
   const weeklyDurationMs = weeklyWorkouts.reduce((acc, w) => acc + w.durationMs, 0)
   const weeklyDurationMinutes = Math.round(weeklyDurationMs / 1000 / 60)
+
+  // Debug logging
+  console.log('Dashboard stats:', {
+    totalWorkouts: history.length,
+    weeklyWorkouts: weeklyWorkouts.length,
+    weeklyVolume,
+    workouts: weeklyWorkouts.map(w => ({
+      name: w.name,
+      totalVolume: w.totalVolume,
+      exercises: w.exercises.length,
+      sets: w.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.completed).length, 0)
+    }))
+  })
 
   // Current Streak (Mock logic for now, real logic needs continuous dates)
   const currentStreak = weeklyWorkouts.length > 0 ? weeklyWorkouts.length : 0 
