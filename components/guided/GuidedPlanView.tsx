@@ -13,10 +13,8 @@ interface GuidedPlanViewProps {
 }
 
 export function GuidedPlanView({ plan, onStartWorkout, onEditPlan }: GuidedPlanViewProps) {
-  const today = new Date().getDay() // 0 = Sunday, 1 = Monday, etc.
-  
-  // Calculate current day in the plan (0-based index)
-  const suggestedDayIndex = today === 0 ? 0 : Math.min(today - 1, plan.weeklySchedule.length - 1)
+  // Start with Day 1 (index 0) as the suggested day
+  const suggestedDayIndex = 0
   
   return (
     <div className="space-y-6">
@@ -63,11 +61,11 @@ export function GuidedPlanView({ plan, onStartWorkout, onEditPlan }: GuidedPlanV
         </div>
       </Card>
 
-      {/* Today's Suggested Workout */}
+      {/* Start with Day 1 */}
       <section>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary" />
-          Today's Workout
+          Start Here: Day 1
         </h3>
         {plan.weeklySchedule[suggestedDayIndex] && (
           <Card className="p-5 border-l-4 border-l-primary hover:bg-white/5 transition-colors">

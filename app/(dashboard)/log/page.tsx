@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
+import { useTimerStore } from "@/lib/stores/timerStore"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { Plus, Timer, ChevronRight, CheckCircle2, ChevronDown, ChevronUp, Info, Music } from "lucide-react"
@@ -16,15 +17,12 @@ import { getExerciseInstructions } from "@/lib/data/exerciseInstructions"
 export default function LogWorkoutPage() {
   const router = useRouter()
   const { activeWorkout, startWorkout, addExercise, removeExercise, addSet, finishWorkout } = useWorkoutStore()
+  const { timerStatus, timerStartTime, pausedDuration, elapsedTime, startTimer, pauseTimer, resumeTimer, resetTimer, updateElapsedTime } = useTimerStore()
   const [isClient, setIsClient] = useState(false)
   const [showExerciseSelector, setShowExerciseSelector] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null)
   const [showMusicTip, setShowMusicTip] = useState(true)
-  const [elapsedTime, setElapsedTime] = useState(0) // In seconds
-  const [timerStatus, setTimerStatus] = useState<'not_started' | 'running' | 'paused'>('not_started')
-  const [timerStartTime, setTimerStartTime] = useState<number | null>(null)
-  const [pausedDuration, setPausedDuration] = useState(0) // Total paused time in seconds
 
   useEffect(() => {
     setIsClient(true)
@@ -38,20 +36,12 @@ export default function LogWorkoutPage() {
   useEffect(() => {
     if (timerStatus !== 'running' || !timerStartTime) return
 
-    const updateTimer = () => {
-      const now = Date.now()
-      const elapsed = Math.floor((now - timerStartTime) / 1000) - pausedDuration
-      setElapsedTime(elapsed)
-    }
-
-    // Update immediately
-    updateTimer()
-
-    // Then update every second
-    const interval = setInterval(updateTimer, 1000)
+    const interval = setInterval(() => {
+      updateElapsedTime()
+    }, 1000)
 
     return () => clearInterval(interval)
-  }, [timerStatus, timerStartTime, pausedDuration])
+  }, [timerStatus, timerStartTime, updateElapsedTime])
 
   // Format time as MM:SS or HH:MM:SS
   const formatTime = (seconds: number) => {
@@ -63,34 +53,6 @@ export default function LogWorkoutPage() {
       return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
     }
     return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  // Timer controls
-  const startTimer = () => {
-    setTimerStartTime(Date.now())
-    setTimerStatus('running')
-    setPausedDuration(0)
-    setElapsedTime(0)
-  }
-
-  const pauseTimer = () => {
-    setTimerStatus('paused')
-  }
-
-  const resumeTimer = () => {
-    if (timerStartTime) {
-      // Calculate how long we've been paused and add to total paused duration
-      const pausedTime = Math.floor((Date.now() - timerStartTime) / 1000) - elapsedTime
-      setPausedDuration(prev => prev + pausedTime)
-    }
-    setTimerStatus('running')
-  }
-
-  const resetTimer = () => {
-    setTimerStatus('not_started')
-    setTimerStartTime(null)
-    setElapsedTime(0)
-    setPausedDuration(0)
   }
 
   if (!isClient) return null
@@ -116,7 +78,7 @@ export default function LogWorkoutPage() {
       
       // Stop the timer
       if (timerStatus === 'running' || timerStatus === 'paused') {
-        setTimerStatus('paused')
+        pauseTimer()
       }
       
       // Pass the timer's elapsed time to finishWorkout (convert seconds to milliseconds)
@@ -124,6 +86,9 @@ export default function LogWorkoutPage() {
       await finishWorkout(durationMs) // Wait for the workout to save to database
       console.log('Workout finished, activeWorkout should be null now')
       console.log('Current activeWorkout:', useWorkoutStore.getState().activeWorkout)
+      
+      // Reset the timer after successful save
+      resetTimer()
       
       // Force clear the persisted state from localStorage
       if (typeof window !== 'undefined') {
