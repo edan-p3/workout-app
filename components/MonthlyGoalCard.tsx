@@ -91,7 +91,7 @@ export function MonthlyGoalCard() {
                         className="fixed inset-0 z-[70]" 
                         onClick={() => setShowTooltip(false)}
                       />
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-[80] w-56 px-4 py-3 bg-white rounded-xl shadow-2xl text-xs text-primary font-medium leading-relaxed animate-in fade-in zoom-in-95 duration-200 opacity-100">
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-[80] w-72 max-w-[calc(100vw-2rem)] px-4 py-3 bg-white rounded-xl shadow-2xl text-xs text-primary font-medium leading-relaxed animate-in fade-in zoom-in-95 duration-200 opacity-100">
                         <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45"></div>
                         Set a monthly goal to track workouts completed in <span className="font-bold">{monthName}</span> (from the 1st to the last day). Your progress updates automatically each time you finish a workout.
                       </div>
@@ -192,7 +192,7 @@ export function MonthlyGoalCard() {
                         className="fixed inset-0 z-[70]" 
                         onClick={() => setShowTooltip(false)}
                       />
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-[80] w-56 px-4 py-3 bg-white rounded-xl shadow-2xl text-xs text-primary font-medium leading-relaxed animate-in fade-in zoom-in-95 duration-200 opacity-100">
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-[80] w-72 max-w-[calc(100vw-2rem)] px-4 py-3 bg-white rounded-xl shadow-2xl text-xs text-primary font-medium leading-relaxed animate-in fade-in zoom-in-95 duration-200 opacity-100">
                         <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45"></div>
                         Your monthly goal tracks workouts completed in <span className="font-bold">{monthName}</span> (from the 1st to the last day). The "Weekly Activity" above shows your last 7 days, which may include workouts from the previous month.
                       </div>
