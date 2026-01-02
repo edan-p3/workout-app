@@ -254,7 +254,24 @@ export const useWorkoutStore = create<WorkoutState>()(
             history: [completedWorkout, ...state.history]
         }
       }), 
-      resetWorkout: () => set({ activeWorkout: null }),
+      resetWorkout: () => {
+        // Clear activeWorkout and also clear from localStorage
+        set({ activeWorkout: null })
+        
+        // Force clear the persisted state
+        if (typeof window !== 'undefined') {
+          try {
+            const storage = localStorage.getItem('workout-storage')
+            if (storage) {
+              const parsed = JSON.parse(storage)
+              parsed.state.activeWorkout = null
+              localStorage.setItem('workout-storage', JSON.stringify(parsed))
+            }
+          } catch (e) {
+            console.error('Error clearing persisted workout:', e)
+          }
+        }
+      },
       updateHistoryWorkout: async (workoutId, updatedWorkout) => {
         // Update in database first
         try {

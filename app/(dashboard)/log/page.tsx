@@ -47,6 +47,21 @@ export default function LogWorkoutPage() {
       console.log('Workout finished, activeWorkout should be null now')
       console.log('Current activeWorkout:', useWorkoutStore.getState().activeWorkout)
       
+      // Force clear the persisted state from localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          const storage = localStorage.getItem('workout-storage')
+          if (storage) {
+            const parsed = JSON.parse(storage)
+            parsed.state.activeWorkout = null
+            localStorage.setItem('workout-storage', JSON.stringify(parsed))
+            console.log('Cleared activeWorkout from localStorage')
+          }
+        } catch (e) {
+          console.error('Error clearing persisted workout:', e)
+        }
+      }
+      
       // Force a small delay to ensure state propagates
       await new Promise(resolve => setTimeout(resolve, 100))
       
