@@ -53,8 +53,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsClient(true)
-    // Load workouts from database
+    // Load workouts and guided plan from database
     loadWorkoutsFromDatabase()
+    useGuidedPlanStore.getState().loadGuidedPlan()
   }, [])
 
   // Reload workouts when returning to the page

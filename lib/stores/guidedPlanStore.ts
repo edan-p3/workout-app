@@ -38,8 +38,31 @@ export const useGuidedPlanStore = create<GuidedPlanState>()(
           
           const plan = generateGuidedPlan(user.id, input)
           
-          // Save to database (optional - for now just store in local state)
-          // TODO: Add database table for guided_plans
+          // Save to database
+          const { data, error } = await supabase
+            .from('guided_plans')
+            .insert({
+              user_id: user.id,
+              name: plan.name,
+              description: plan.description,
+              plan_data: {
+                input: plan.input,
+                weeklySchedule: plan.weeklySchedule,
+                progressionRules: plan.progressionRules
+              },
+              current_week: plan.currentWeek,
+              is_active: true
+            })
+            .select()
+            .single()
+          
+          if (error) {
+            console.error('Error saving plan to database:', error)
+            // Still save locally even if database fails
+          } else if (data) {
+            // Update plan with database ID
+            plan.id = data.id
+          }
           
           set({ 
             currentPlan: plan,
@@ -52,8 +75,44 @@ export const useGuidedPlanStore = create<GuidedPlanState>()(
       },
       
       loadGuidedPlan: async () => {
-        // TODO: Load from database
-        // For now, it's loaded from localStorage via persist
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (!user) return
+          
+          // Load active plan from database
+          const { data, error } = await supabase
+            .from('guided_plans')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single()
+          
+          if (error) {
+            console.error('Error loading plan from database:', error)
+            return
+          }
+          
+          if (data && data.plan_data) {
+            // Reconstruct the plan from database
+            const plan: GuidedPlan = {
+              id: data.id,
+              userId: user.id,
+              name: data.name,
+              description: data.description || '',
+              weeklySchedule: data.plan_data.weeklySchedule,
+              currentWeek: data.current_week,
+              startedAt: new Date(data.started_at),
+              input: data.plan_data.input,
+              progressionRules: data.plan_data.progressionRules
+            }
+            
+            set({ currentPlan: plan })
+          }
+        } catch (error) {
+          console.error('Error loading guided plan:', error)
+        }
       },
       
       markWorkoutComplete: (dayIndex: number) => {
