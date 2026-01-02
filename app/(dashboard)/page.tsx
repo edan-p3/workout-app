@@ -74,8 +74,9 @@ export default function DashboardPage() {
 
   if (!isClient) return null
 
-  // Show Welcome Screen for first-time users (no workouts and haven't completed onboarding)
-  if (!hasCompletedOnboarding && history.length === 0) {
+  // Show Welcome Screen if user hasn't completed onboarding AND hasn't chosen manual tracking
+  // (They might have workouts from before the guided plan feature was added)
+  if (!hasCompletedOnboarding && !preferManualTracking && !currentPlan) {
     return (
       <>
         <WelcomeScreen
