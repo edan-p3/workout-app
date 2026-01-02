@@ -74,29 +74,6 @@ export default function DashboardPage() {
 
   if (!isClient) return null
 
-  // Show Welcome Screen if user hasn't completed onboarding AND hasn't chosen manual tracking
-  // (They might have workouts from before the guided plan feature was added)
-  if (!hasCompletedOnboarding && !preferManualTracking && !currentPlan) {
-    return (
-      <>
-        <WelcomeScreen
-          onStartGuided={() => setShowGuidedWizard(true)}
-          onJumpIn={() => setPreferManualTracking(true)}
-        />
-        {showGuidedWizard && (
-          <GuidedPlanWizard
-            onComplete={async (input: GuidedPlanInput) => {
-              await createGuidedPlan(input)
-              setShowGuidedWizard(false)
-              router.refresh()
-            }}
-            onClose={() => setShowGuidedWizard(false)}
-          />
-        )}
-      </>
-    )
-  }
-
   const handleDelete = () => {
     if (selectedWorkout) {
       deleteWorkout(selectedWorkout.id)
@@ -314,7 +291,7 @@ export default function DashboardPage() {
       {/* Quick Actions (Replaced old Quick Start) */}
       <section>
         <h2 className="text-xl font-heading font-bold text-white mb-4">Actions</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className={`grid ${!currentPlan && !preferManualTracking ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2'} gap-3`}>
              <Link href="/log">
                 <Button className="w-full py-6 flex flex-col items-center justify-center gap-2 group">
                     <div className="p-2 bg-white/20 rounded-full">
@@ -326,6 +303,7 @@ export default function DashboardPage() {
                     </div>
                 </Button>
              </Link>
+             
              <Link href="/leaderboard">
                 <Button variant="outline" className="w-full py-6 flex flex-col items-center justify-center gap-2 group border-yellow-400/30 hover:border-yellow-400 hover:bg-yellow-400/10">
                     <div className="p-2 bg-yellow-400/20 rounded-full">
@@ -337,6 +315,23 @@ export default function DashboardPage() {
                     </div>
                 </Button>
              </Link>
+             
+             {/* Show Personalize button if no guided plan exists */}
+             {!currentPlan && !preferManualTracking && (
+               <Button 
+                 onClick={() => setShowGuidedWizard(true)}
+                 variant="outline" 
+                 className="w-full py-6 flex flex-col items-center justify-center gap-2 group border-purple-400/30 hover:border-purple-400 hover:bg-purple-400/10"
+               >
+                 <div className="p-2 bg-purple-400/20 rounded-full">
+                   <Target className="w-5 h-5 text-purple-400" />
+                 </div>
+                 <div className="text-center">
+                   <p className="font-bold text-sm text-white">Personalize</p>
+                   <p className="text-xs text-text-muted">Get custom plan</p>
+                 </div>
+               </Button>
+             )}
         </div>
       </section>
 
@@ -1096,7 +1091,11 @@ export default function DashboardPage() {
             setShowGuidedWizard(false)
             router.refresh()
           }}
-          onClose={() => setShowGuidedWizard(false)}
+          onClose={() => {
+            // If user closes without completing, set preferManualTracking so button doesn't show again
+            setPreferManualTracking(true)
+            setShowGuidedWizard(false)
+          }}
         />
       )}
     </div>
