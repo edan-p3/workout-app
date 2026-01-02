@@ -4,16 +4,19 @@ import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { Target, TrendingUp, Zap, Trophy, Edit2, Check, X, Flame } from "lucide-react"
+import { Target, TrendingUp, Zap, Trophy, Edit2, Check, X, Flame, MoreVertical, RotateCcw, Trash2 } from "lucide-react"
 import { useMonthlyGoalStore } from "@/lib/stores/monthlyGoalStore"
 import { cn } from "@/lib/utils/cn"
 
 export function MonthlyGoalCard() {
-  const { currentGoal, isLoading, loadCurrentMonthGoal, setMonthlyGoal } = useMonthlyGoalStore()
+  const { currentGoal, isLoading, loadCurrentMonthGoal, setMonthlyGoal, resetProgress, deleteGoal } = useMonthlyGoalStore()
   const [isEditing, setIsEditing] = useState(false)
   const [goalInput, setGoalInput] = useState('')
   const [showCelebration, setShowCelebration] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const [showOptions, setShowOptions] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -151,12 +154,55 @@ export function MonthlyGoalCard() {
           </div>
           
           {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <Edit2 className="w-4 h-4 text-text-muted hover:text-white" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setIsEditing(true)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                title="Edit goal"
+              >
+                <Edit2 className="w-4 h-4 text-text-muted hover:text-white" />
+              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowOptions(!showOptions)}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  title="More options"
+                >
+                  <MoreVertical className="w-4 h-4 text-text-muted hover:text-white" />
+                </button>
+                
+                {showOptions && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setShowOptions(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-bg-card border border-white/10 rounded-lg shadow-xl z-20 overflow-hidden">
+                      <button
+                        onClick={() => {
+                          setShowOptions(false)
+                          setShowResetConfirm(true)
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-white hover:bg-white/10 transition-colors"
+                      >
+                        <RotateCcw className="w-4 h-4 text-blue-400" />
+                        <span>Reset Progress</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowOptions(false)
+                          setShowDeleteConfirm(true)
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-error hover:bg-error/10 transition-colors border-t border-white/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Delete Goal</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
@@ -281,6 +327,80 @@ export function MonthlyGoalCard() {
           </div>
         )}
       </div>
+      
+      {/* Reset Progress Confirmation */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <Card className="w-full max-w-sm p-6">
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-blue-400/20 flex items-center justify-center mx-auto">
+                <RotateCcw className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-1">Reset Progress?</h3>
+                <p className="text-sm text-text-muted">
+                  This will set your completed workouts back to 0 for this month. Your goal will remain at {currentGoal?.goalWorkouts}.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setShowResetConfirm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={async () => {
+                    await resetProgress()
+                    setShowResetConfirm(false)
+                  }}
+                  className="flex-1 bg-blue-500 hover:bg-blue-500/80"
+                >
+                  Reset
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+      
+      {/* Delete Goal Confirmation */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <Card className="w-full max-w-sm p-6">
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-error/20 flex items-center justify-center mx-auto">
+                <Trash2 className="w-6 h-6 text-error" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-1">Delete Goal?</h3>
+                <p className="text-sm text-text-muted">
+                  This will permanently delete your {monthName} goal. You can create a new one anytime.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={async () => {
+                    await deleteGoal()
+                    setShowDeleteConfirm(false)
+                  }}
+                  className="flex-1 bg-error hover:bg-error/80"
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </Card>
   )
 }

@@ -19,6 +19,8 @@ interface MonthlyGoalState {
   loadCurrentMonthGoal: () => Promise<void>
   setMonthlyGoal: (goalWorkouts: number) => Promise<void>
   incrementWorkoutCount: () => Promise<void>
+  resetProgress: () => Promise<void>
+  deleteGoal: () => Promise<void>
 }
 
 // Helper to get current month in YYYY-MM format
@@ -223,6 +225,61 @@ export const useMonthlyGoalStore = create<MonthlyGoalState>()(
           }
         } catch (error) {
           console.error('Error in incrementWorkoutCount:', error)
+        }
+      },
+      
+      resetProgress: async () => {
+        try {
+          const currentGoal = get().currentGoal
+          if (!currentGoal) return
+          
+          const { data, error } = await supabase
+            .from('monthly_goals')
+            .update({ completed_workouts: 0 })
+            .eq('id', currentGoal.id)
+            .select()
+            .single()
+          
+          if (error) {
+            console.error('Error resetting progress:', error)
+            return
+          }
+          
+          if (data) {
+            set({
+              currentGoal: {
+                ...currentGoal,
+                completedWorkouts: 0,
+                updatedAt: new Date(data.updated_at)
+              }
+            })
+          }
+        } catch (error) {
+          console.error('Error in resetProgress:', error)
+        }
+      },
+      
+      deleteGoal: async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (!user) return
+          
+          const currentGoal = get().currentGoal
+          if (!currentGoal) return
+          
+          const { error } = await supabase
+            .from('monthly_goals')
+            .delete()
+            .eq('id', currentGoal.id)
+          
+          if (error) {
+            console.error('Error deleting goal:', error)
+            return
+          }
+          
+          set({ currentGoal: null })
+        } catch (error) {
+          console.error('Error in deleteGoal:', error)
         }
       }
     }),
