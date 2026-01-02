@@ -140,8 +140,9 @@ export const useWorkoutStore = create<WorkoutState>()(
           }
         }
       }),
-      finishWorkout: () => set(async (state) => {
-        if (!state.activeWorkout || !state.activeWorkout.startTime) return state
+      finishWorkout: async () => {
+        const state = get()
+        if (!state.activeWorkout || !state.activeWorkout.startTime) return
         
         const startTime = new Date(state.activeWorkout.startTime)
         const endTime = new Date()
@@ -203,13 +204,16 @@ export const useWorkoutStore = create<WorkoutState>()(
                       weight: set.weight || null,
                       reps: set.reps || null,
                       duration_minutes: set.duration || null,
-                      distance: set.distance || null,
-                      calories: set.calories || null,
+                      distance_miles: set.distance || null,
+                      calories_burned: set.calories || null,
                       is_completed: true
                     }))
 
                   if (setsToInsert.length > 0) {
-                    await supabase.from('exercise_sets').insert(setsToInsert)
+                    const { error: setsError } = await supabase.from('exercise_sets').insert(setsToInsert)
+                    if (setsError) {
+                      console.error('Error saving sets:', setsError)
+                    }
                   }
                 }
               }
@@ -249,11 +253,14 @@ export const useWorkoutStore = create<WorkoutState>()(
           console.error('Error saving workout to database:', error)
         }
 
-        return {
+        // NOW update state synchronously after all async operations
+        set({
             activeWorkout: null,
             history: [completedWorkout, ...state.history]
-        }
-      }), 
+        })
+        
+        console.log('State updated: activeWorkout set to null')
+      }, 
       resetWorkout: () => {
         // Clear activeWorkout and also clear from localStorage
         set({ activeWorkout: null })
