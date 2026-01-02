@@ -455,18 +455,22 @@ export default function DashboardPage() {
                             console.log('Calling updateHistoryWorkout...')
                             await useWorkoutStore.getState().updateHistoryWorkout(selectedWorkout.id, updatedWorkout)
                             
-                            console.log('Update successful! Reloading workouts...')
+                            console.log('Update successful! Reloading workouts from database...')
                             
                             // Reload workouts from database to get proper chronological order
                             await loadWorkoutsFromDatabase()
                             
+                            console.log('Reload complete! Closing modal...')
+                            
+                            // Close modal after reload is complete
                             setSelectedWorkout(null)
                             setIsEditingWorkout(false)
                             setEditedWorkout(null)
+                            setIsSaving(false)
+                            
                           } catch (error) {
                             console.error('Error saving workout:', error)
                             alert('Failed to save workout. Please try again.')
-                          } finally {
                             setIsSaving(false)
                           }
                         }}
