@@ -4,13 +4,14 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
-import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info, Edit } from "lucide-react"
+import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info, Edit, BookOpen } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { useWeightStore } from "@/lib/stores/weightStore"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
 import { WORKOUT_TEMPLATES, type WorkoutTemplate } from "@/lib/data/workoutTemplates"
 import { getExerciseInstructions } from "@/lib/data/exerciseInstructions"
 import { useRouter } from "next/navigation"
+import { TutorialModal } from "@/components/TutorialModal"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -26,6 +27,7 @@ export default function DashboardPage() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<WorkoutTemplate['difficulty'] | null>(null)
   const [isEditingWorkout, setIsEditingWorkout] = useState(false)
   const [editWorkoutDate, setEditWorkoutDate] = useState('')
+  const [showTutorial, setShowTutorial] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -127,10 +129,24 @@ export default function DashboardPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Brand Header */}
       <div className="text-center pt-2">
-        <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-primary via-blue-500 to-primary bg-clip-text text-transparent">
-          Rep It!
-        </h1>
-        <p className="text-text-muted text-xs uppercase tracking-widest mt-1">Every Rep Counts</p>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex-1"></div>
+          <div className="flex-1 text-center">
+            <h1 className="text-3xl font-heading font-bold bg-gradient-to-r from-primary via-blue-500 to-primary bg-clip-text text-transparent">
+              Rep It!
+            </h1>
+            <p className="text-text-muted text-xs uppercase tracking-widest mt-1">Every Rep Counts</p>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <button
+              onClick={() => setShowTutorial(true)}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors group"
+              aria-label="Tutorial"
+            >
+              <BookOpen className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Hero / Streak */}
@@ -680,6 +696,9 @@ export default function DashboardPage() {
           </Card>
         </div>
       )}
+
+      {/* Tutorial Modal */}
+      <TutorialModal isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
     </div>
   )
 }
