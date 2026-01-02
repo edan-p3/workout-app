@@ -43,7 +43,7 @@ export type WorkoutState = {
   addSet: (exerciseId: string) => void
   updateSet: (exerciseId: string, setId: string, updates: Partial<Set>) => void
   completeSet: (exerciseId: string, setId: string) => void
-  finishWorkout: () => Promise<void>
+  finishWorkout: (customDurationMs?: number) => Promise<void>
   resetWorkout: () => void
   updateHistoryWorkout: (workoutId: string, updatedWorkout: CompletedWorkout) => Promise<void>
   deleteWorkout: (workoutId: string) => void
@@ -140,13 +140,14 @@ export const useWorkoutStore = create<WorkoutState>()(
           }
         }
       }),
-      finishWorkout: async () => {
+      finishWorkout: async (customDurationMs?: number) => {
         const state = get()
         if (!state.activeWorkout || !state.activeWorkout.startTime) return
         
         const startTime = new Date(state.activeWorkout.startTime)
         const endTime = new Date()
-        const durationMs = endTime.getTime() - startTime.getTime()
+        // Use custom duration if provided (from timer), otherwise calculate from timestamps
+        const durationMs = customDurationMs !== undefined ? customDurationMs : (endTime.getTime() - startTime.getTime())
         const totalVolume = state.activeWorkout.exercises.reduce((acc, ex) => acc + calculateVolume(ex.sets), 0)
 
         const completedWorkout: CompletedWorkout = {

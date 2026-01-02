@@ -22,6 +22,9 @@ export default function LogWorkoutPage() {
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null)
   const [showMusicTip, setShowMusicTip] = useState(true)
   const [elapsedTime, setElapsedTime] = useState(0) // In seconds
+  const [timerStatus, setTimerStatus] = useState<'not_started' | 'running' | 'paused'>('not_started')
+  const [timerStartTime, setTimerStartTime] = useState<number | null>(null)
+  const [pausedDuration, setPausedDuration] = useState(0) // Total paused time in seconds
 
   useEffect(() => {
     setIsClient(true)
@@ -31,15 +34,13 @@ export default function LogWorkoutPage() {
     console.log('Log page - activeWorkout changed:', activeWorkout ? activeWorkout.name : 'null')
   }, [activeWorkout])
 
-  // Timer effect - update every second
+  // Timer effect - update every second when running
   useEffect(() => {
-    if (!activeWorkout?.startTime) return
+    if (timerStatus !== 'running' || !timerStartTime) return
 
-    const startTime = new Date(activeWorkout.startTime).getTime()
-    
     const updateTimer = () => {
       const now = Date.now()
-      const elapsed = Math.floor((now - startTime) / 1000) // Convert to seconds
+      const elapsed = Math.floor((now - timerStartTime) / 1000) - pausedDuration
       setElapsedTime(elapsed)
     }
 
@@ -50,7 +51,7 @@ export default function LogWorkoutPage() {
     const interval = setInterval(updateTimer, 1000)
 
     return () => clearInterval(interval)
-  }, [activeWorkout?.startTime])
+  }, [timerStatus, timerStartTime, pausedDuration])
 
   // Format time as MM:SS or HH:MM:SS
   const formatTime = (seconds: number) => {
@@ -64,6 +65,34 @@ export default function LogWorkoutPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  // Timer controls
+  const startTimer = () => {
+    setTimerStartTime(Date.now())
+    setTimerStatus('running')
+    setPausedDuration(0)
+    setElapsedTime(0)
+  }
+
+  const pauseTimer = () => {
+    setTimerStatus('paused')
+  }
+
+  const resumeTimer = () => {
+    if (timerStartTime) {
+      // Calculate how long we've been paused and add to total paused duration
+      const pausedTime = Math.floor((Date.now() - timerStartTime) / 1000) - elapsedTime
+      setPausedDuration(prev => prev + pausedTime)
+    }
+    setTimerStatus('running')
+  }
+
+  const resetTimer = () => {
+    setTimerStatus('not_started')
+    setTimerStartTime(null)
+    setElapsedTime(0)
+    setPausedDuration(0)
+  }
+
   if (!isClient) return null
 
   // 1. No active workout -> Show Starter Selection
@@ -74,10 +103,25 @@ export default function LogWorkoutPage() {
   const totalVolume = activeWorkout.exercises.reduce((acc, ex) => acc + calculateVolume(ex.sets), 0)
 
   const handleFinish = async () => {
+    // Warn if timer wasn't started
+    if (timerStatus === 'not_started') {
+      if (!confirm('You haven\'t started the timer. Finish workout anyway?')) {
+        return
+      }
+    }
+    
     setIsSaving(true)
     try {
-      console.log('Finishing workout...')
-      await finishWorkout() // Wait for the workout to save to database
+      console.log('Finishing workout with duration:', elapsedTime, 'seconds')
+      
+      // Stop the timer
+      if (timerStatus === 'running' || timerStatus === 'paused') {
+        setTimerStatus('paused')
+      }
+      
+      // Pass the timer's elapsed time to finishWorkout (convert seconds to milliseconds)
+      const durationMs = elapsedTime * 1000
+      await finishWorkout(durationMs) // Wait for the workout to save to database
       console.log('Workout finished, activeWorkout should be null now')
       console.log('Current activeWorkout:', useWorkoutStore.getState().activeWorkout)
       
@@ -118,16 +162,82 @@ export default function LogWorkoutPage() {
                 <h1 className="text-xl font-heading font-bold text-white">{activeWorkout.name}</h1>
                 <p className="text-xs text-text-muted">{activeWorkout.exercises.length} Exercises</p>
             </div>
-            <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-lg font-mono font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20">
-                    <Timer className="w-5 h-5 animate-pulse" />
+            <div className="flex items-center gap-2">
+                {/* Timer Display */}
+                <div className={cn(
+                  "flex items-center gap-2 text-lg font-mono font-bold px-3 py-1.5 rounded-lg border transition-all",
+                  timerStatus === 'running' 
+                    ? "text-success bg-success/10 border-success/20" 
+                    : timerStatus === 'paused'
+                    ? "text-warning bg-warning/10 border-warning/20"
+                    : "text-text-muted bg-white/5 border-white/10"
+                )}>
+                    <Timer className={cn("w-5 h-5", timerStatus === 'running' && "animate-pulse")} />
                     <span>{formatTime(elapsedTime)}</span>
                 </div>
+                
+                {/* Timer Controls */}
+                <div className="flex items-center gap-1">
+                  {timerStatus === 'not_started' && (
+                    <Button
+                      size="sm"
+                      onClick={startTimer}
+                      className="bg-success hover:bg-success/80 text-white px-3"
+                    >
+                      Start
+                    </Button>
+                  )}
+                  
+                  {timerStatus === 'running' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={pauseTimer}
+                      className="border-warning/30 text-warning hover:bg-warning/10 px-3"
+                    >
+                      Pause
+                    </Button>
+                  )}
+                  
+                  {timerStatus === 'paused' && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={resumeTimer}
+                        className="bg-success hover:bg-success/80 text-white px-3"
+                      >
+                        Resume
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={resetTimer}
+                        className="border-error/30 text-error hover:bg-error/10 px-2"
+                      >
+                        Reset
+                      </Button>
+                    </>
+                  )}
+                  
+                  {timerStatus !== 'not_started' && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={resetTimer}
+                      className="text-text-muted hover:text-white px-2"
+                      title="Cancel timer"
+                    >
+                      ✕
+                    </Button>
+                  )}
+                </div>
+                
                 <Button 
                     variant="ghost" 
                     size="sm"
                     onClick={() => {
                         if (confirm('Cancel this workout? All progress will be lost.')) {
+                            resetTimer()
                             useWorkoutStore.getState().resetWorkout()
                             router.push('/')
                         }
