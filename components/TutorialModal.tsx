@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { X, TrendingUp, Trophy, Dumbbell, Calendar, Plus, ChevronRight, Scale, Activity } from "lucide-react"
+import { X, TrendingUp, Trophy, Dumbbell, Calendar, Plus, ChevronRight, Scale, Activity, Target, Timer } from "lucide-react"
 
 interface TutorialSection {
   id: string
@@ -23,9 +23,25 @@ const tutorialSections: TutorialSection[] = [
       "View your workouts, volume, time, and weight from the last 7 days",
       "Workouts: Number of workout sessions you completed",
       "Volume: Total weight lifted (weight × reps × sets) in pounds",
-      "Time: Total minutes spent exercising",
+      "Time: Total minutes spent exercising (tracked with workout timer)",
       "Weight: Your current body weight - tap to enter new measurements",
-      "💡 Tip: Log your weight daily or after each workout to track your progress over time"
+      "Tap the (?) icon next to each metric for detailed explanations",
+      "💡 Tip: Weekly Summary shows last 7 days, while Monthly Goal tracks the current calendar month"
+    ]
+  },
+  {
+    id: "monthly-goal",
+    icon: Target,
+    title: "Monthly Goal",
+    description: "Set and track your monthly workout targets",
+    steps: [
+      "Set a monthly goal: Enter the number of workouts you want to complete this month (1-100)",
+      "Auto-tracking: Your goal automatically increments when you finish a workout",
+      "Visual progress: See your completion percentage with a circular progress indicator",
+      "Motivational messages: Get encouraging messages as you reach milestones (25%, 50%, 75%, 100%)",
+      "Manage your goal: Click the edit icon to change your target, or use the ⋮ menu to reset progress or delete",
+      "Monthly tracking: Only counts workouts completed in the current calendar month",
+      "💡 Tip: Tap the (?) icon to learn how Monthly Goal differs from Weekly Activity"
     ]
   },
   {
@@ -34,10 +50,25 @@ const tutorialSections: TutorialSection[] = [
     title: "Quick Actions",
     description: "Fast access to key features",
     steps: [
-      "Log Workout: Start a new workout session - track your exercises and sets in real-time",
+      "Log Workout: Start a new workout session with timer controls",
       "Leaderboard: See how you rank against other users based on points, workouts, or streak",
       "Compete with friends and stay motivated by climbing the ranks!",
       "💡 Tip: Complete workouts consistently to earn points and improve your ranking"
+    ]
+  },
+  {
+    id: "personalized-training",
+    icon: Target,
+    title: "Personalized Training",
+    description: "Custom workout plans built for your goals",
+    steps: [
+      "Create Your Plan: Answer 7 questions about your fitness goals, experience, and availability",
+      "Weekly Schedule: Get a customized workout split based on your preferences",
+      "Progression Rules: Your plan suggests when to add weight, reps, or sets",
+      "Edit Your Plan: Click 'Edit Plan' to modify your settings anytime",
+      "Restart Plan: Reset back to Week 1 while keeping your workout history",
+      "Cancel Plan: Remove your plan and return to manual tracking",
+      "💡 Tip: Be honest about your experience level for the best results"
     ]
   },
   {
@@ -49,8 +80,10 @@ const tutorialSections: TutorialSection[] = [
       "Choose your fitness level: Beginner, Intermediate, or Advanced",
       "Each level has tailored workouts with proper form instructions",
       "Tap any workout to see the full exercise plan with sets, reps, and duration",
+      "Expand/collapse: View definitions of each fitness level before selecting",
       "Click 'Start This Workout' to begin - all exercises are pre-loaded for you",
-      "💡 Tip: Tap the info icon (ℹ️) on any exercise to see proper form cues and tips"
+      "Form instructions: Tap the info icon (ℹ️) on any exercise to see proper form cues",
+      "💡 Tip: Start with Beginner level to learn proper form before advancing"
     ]
   },
   {
@@ -59,26 +92,32 @@ const tutorialSections: TutorialSection[] = [
     title: "Recent Activity",
     description: "View and manage your workout history",
     steps: [
-      "See your last 5 completed workouts with date and exercise count",
-      "Tap any workout card to view full details, exercises, and sets",
-      "Edit workout: Change the date if you logged it late",
-      "Delete workout: Remove workouts you want to delete",
-      "💡 Tip: Review past workouts to track your progress and plan future sessions"
+      "See your last 5 completed workouts with date, exercises, and volume/time/distance",
+      "Tap any workout card to open the workout detail modal",
+      "Edit mode: Click the edit icon to modify the date, exercises, or sets",
+      "Add exercises: Click 'Add Exercise' button while editing to add more exercises",
+      "Remove items: Use the × button to remove individual exercises or sets",
+      "Delete workout: Click the trash icon and confirm to permanently delete",
+      "Auto-sync: Workouts automatically re-sort chronologically after editing dates",
+      "💡 Tip: Edit dates if you forgot to log a workout on the correct day"
     ]
   },
   {
     id: "log-workout",
     icon: Plus,
     title: "Logging a Workout",
-    description: "Track your exercises, sets, and reps",
+    description: "Track your exercises, sets, and reps with timer",
     steps: [
       "Option 1: Start from a pre-loaded workout template (recommended for beginners)",
       "Option 2: Create your own custom workout by selecting exercises manually",
-      "Add exercises: Tap '+Add Exercise' and browse by category (Push, Pull, Legs, etc.)",
-      "Log sets: Enter weight, reps, or time/distance for cardio exercises",
-      "View form instructions: Tap the info icon (ℹ️) to see proper form while working out",
-      "Finish: Tap 'Finish' when done - your workout saves automatically to your profile",
-      "💡 Tip: Use the music buttons to open Spotify or Apple Music without leaving the app"
+      "Timer Controls: Click 'Start' to begin timing your workout, 'Pause' for breaks, 'Resume' to continue",
+      "Reset Timer: Use the ✕ button to restart your timer at any time",
+      "Add exercises: Tap '+Add Exercise' and browse by category (Push, Pull, Legs, Cardio, Sports)",
+      "Log sets: Enter weight/reps for strength exercises, or distance/time/calories for cardio",
+      "View form instructions: Tap the info icon (ℹ️) to see proper form cues and pro tips",
+      "Remove exercises: Tap the × button next to any exercise to remove it",
+      "Finish: Tap 'Finish' when done - timer stops and workout saves with accurate duration",
+      "💡 Tip: Always start the timer to track accurate workout duration for your stats"
     ]
   },
   {
@@ -101,9 +140,12 @@ const tutorialSections: TutorialSection[] = [
     description: "Stay motivated with achievements",
     steps: [
       "Earn 100 points for each completed workout",
-      "Build your streak by working out consistently",
+      "Build your streak by working out consistently (resets if you miss days)",
+      "Auto-sync: Your profile automatically updates total workouts, points, and streak",
       "Check your stats on the Profile page: Workouts, Streak, Points",
       "Compete on the Leaderboard: Switch between Points, Workouts, and Streak tabs",
+      "View rankings: See other users' first names and compare your progress",
+      "Refresh button: Manually sync your stats if needed",
       "💡 Tip: Working out daily helps maintain your streak and climb the leaderboard!"
     ]
   }
