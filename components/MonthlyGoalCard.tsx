@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { Target, TrendingUp, Zap, Trophy, Edit2, Check, X, Flame, MoreVertical, RotateCcw, Trash2 } from "lucide-react"
+import { Target, TrendingUp, Zap, Trophy, Edit2, Check, X, Flame, MoreVertical, RotateCcw, Trash2, HelpCircle } from "lucide-react"
 import { useMonthlyGoalStore } from "@/lib/stores/monthlyGoalStore"
 import { cn } from "@/lib/utils/cn"
 
@@ -17,6 +17,7 @@ export function MonthlyGoalCard() {
   const [showOptions, setShowOptions] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showTooltip, setShowTooltip] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -59,6 +60,9 @@ export function MonthlyGoalCard() {
     )
   }
 
+  // Get current month name
+  const monthName = new Date().toLocaleString('default', { month: 'long' })
+
   // No goal set yet
   if (!currentGoal) {
     return (
@@ -68,8 +72,34 @@ export function MonthlyGoalCard() {
             <div className="p-3 bg-primary/20 rounded-xl">
               <Target className="w-6 h-6 text-primary" />
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">Monthly Goal</h3>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-white">Monthly Goal</h3>
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowTooltip(!showTooltip)
+                    }}
+                    className="p-0.5 hover:bg-white/10 rounded transition-colors"
+                  >
+                    <HelpCircle className="w-4 h-4 text-text-muted hover:text-white" />
+                  </button>
+                  {showTooltip && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setShowTooltip(false)}
+                      />
+                      <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-white rounded-xl shadow-2xl z-20 text-left">
+                        <p className="text-xs text-primary font-medium leading-relaxed">
+                          Set a monthly goal to track workouts completed in <span className="font-bold">{monthName}</span> (from the 1st to the last day). Your progress updates automatically each time you finish a workout.
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
               <p className="text-xs text-text-muted">Set your workout target</p>
             </div>
           </div>
@@ -113,9 +143,6 @@ export function MonthlyGoalCard() {
     return "🎯 Time to start crushing your goal!"
   }
 
-  // Get current month name
-  const monthName = new Date().toLocaleString('default', { month: 'long' })
-
   return (
     <Card className={cn(
       "relative overflow-hidden transition-all duration-300",
@@ -148,7 +175,33 @@ export function MonthlyGoalCard() {
               )}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">{monthName} Goal</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-white">{monthName} Goal</h3>
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowTooltip(!showTooltip)
+                    }}
+                    className="p-0.5 hover:bg-white/10 rounded transition-colors"
+                  >
+                    <HelpCircle className="w-4 h-4 text-text-muted hover:text-white" />
+                  </button>
+                  {showTooltip && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setShowTooltip(false)}
+                      />
+                      <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-white rounded-xl shadow-2xl z-20 text-left">
+                        <p className="text-xs text-primary font-medium leading-relaxed">
+                          Your monthly goal tracks workouts completed in <span className="font-bold">{monthName}</span> (from the 1st to the last day). The "Weekly Activity" above shows your last 7 days, which may include workouts from the previous month.
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
               <p className="text-xs text-text-muted">{getMessage()}</p>
             </div>
           </div>
