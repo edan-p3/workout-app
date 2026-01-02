@@ -291,7 +291,7 @@ export default function DashboardPage() {
       {/* Quick Actions (Replaced old Quick Start) */}
       <section>
         <h2 className="text-xl font-heading font-bold text-white mb-4">Actions</h2>
-        <div className={`grid ${!currentPlan && !preferManualTracking ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2'} gap-3`}>
+        <div className="grid grid-cols-2 gap-3">
              <Link href="/log">
                 <Button className="w-full py-6 flex flex-col items-center justify-center gap-2 group">
                     <div className="p-2 bg-white/20 rounded-full">
@@ -315,23 +315,6 @@ export default function DashboardPage() {
                     </div>
                 </Button>
              </Link>
-             
-             {/* Show Personalize button if no guided plan exists */}
-             {!currentPlan && !preferManualTracking && (
-               <Button 
-                 onClick={() => setShowGuidedWizard(true)}
-                 variant="outline" 
-                 className="w-full py-6 flex flex-col items-center justify-center gap-2 group border-purple-400/30 hover:border-purple-400 hover:bg-purple-400/10"
-               >
-                 <div className="p-2 bg-purple-400/20 rounded-full">
-                   <Target className="w-5 h-5 text-purple-400" />
-                 </div>
-                 <div className="text-center">
-                   <p className="font-bold text-sm text-white">Personalize</p>
-                   <p className="text-xs text-text-muted">Get custom plan</p>
-                 </div>
-               </Button>
-             )}
         </div>
       </section>
 
@@ -1080,6 +1063,44 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Personalize Section - Always visible at bottom */}
+      <section className="mt-8">
+        <Card className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-400/30">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-purple-400/20 rounded-xl">
+                  <Target className="w-6 h-6 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Personalized Training</h3>
+                  <p className="text-xs text-text-muted">Custom workout plans built for your goals</p>
+                </div>
+              </div>
+            </div>
+            
+            {currentPlan ? (
+              <Button 
+                onClick={() => setShowGuidedWizard(true)}
+                variant="outline"
+                className="w-full mt-3 border-purple-400/30 hover:border-purple-400 hover:bg-purple-400/10"
+              >
+                Edit Your Plan
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => setShowGuidedWizard(true)}
+                className="w-full mt-3 bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-90"
+              >
+                Create Your Plan
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            )}
+          </div>
+        </Card>
+      </section>
+
       {/* Tutorial Modal */}
       <TutorialModal isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
 
@@ -1092,8 +1113,7 @@ export default function DashboardPage() {
             router.refresh()
           }}
           onClose={() => {
-            // If user closes without completing, set preferManualTracking so button doesn't show again
-            setPreferManualTracking(true)
+            // Just close without setting preferManualTracking
             setShowGuidedWizard(false)
           }}
         />
