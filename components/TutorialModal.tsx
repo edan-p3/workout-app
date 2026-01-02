@@ -123,8 +123,9 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl">
-        <div className="sticky top-0 bg-bg-card backdrop-blur-sm p-6 border-b border-white/10 z-10">
+      <div className="w-full max-w-3xl h-[90vh] flex flex-col bg-bg-card rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 bg-bg-card p-6 border-b border-white/10">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-heading font-bold text-white flex items-center gap-2">
@@ -141,7 +142,8 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
           </div>
         </div>
 
-        <div className="p-6">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6">
           {!selectedSection ? (
             /* Section Selection View */
             <div className="space-y-3">
@@ -215,7 +217,8 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
           )}
         </div>
 
-        <div className="sticky bottom-0 bg-bg-card backdrop-blur-sm p-6 border-t border-white/10">
+        {/* Fixed Footer */}
+        <div className="flex-shrink-0 bg-bg-card p-6 border-t border-white/10">
           <Button 
             onClick={onClose}
             variant="secondary"
@@ -224,7 +227,7 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
             Got it, let's go! 💪
           </Button>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
