@@ -8,18 +8,31 @@ import { Input } from "@/components/ui/Input"
 import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info, Edit, BookOpen, Save } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { useWeightStore } from "@/lib/stores/weightStore"
+import { useGuidedPlanStore } from "@/lib/stores/guidedPlanStore"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
 import { WORKOUT_TEMPLATES, type WorkoutTemplate } from "@/lib/data/workoutTemplates"
 import { getExerciseInstructions } from "@/lib/data/exerciseInstructions"
 import { EXERCISE_DATABASE, EXERCISE_CATEGORIES } from "@/lib/data/exercises"
 import { useRouter } from "next/navigation"
 import { TutorialModal } from "@/components/TutorialModal"
+import { WelcomeScreen } from "@/components/guided/WelcomeScreen"
+import { GuidedPlanWizard } from "@/components/guided/GuidedPlanWizard"
+import { GuidedPlanView } from "@/components/guided/GuidedPlanView"
 import { supabase } from "@/lib/supabase/client"
+import type { GuidedPlanInput } from "@/types/guided-plan"
 
 export default function DashboardPage() {
   const router = useRouter()
   const { history, deleteWorkout, loadWorkoutsFromDatabase, startWorkout, addExercise } = useWorkoutStore()
   const { getLatestWeight, entries } = useWeightStore()
+  const { 
+    hasCompletedOnboarding, 
+    preferManualTracking, 
+    currentPlan,
+    setPreferManualTracking,
+    createGuidedPlan 
+  } = useGuidedPlanStore()
+  
   const [isClient, setIsClient] = useState(false)
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
   const [selectedWorkout, setSelectedWorkout] = useState<any>(null)
@@ -36,6 +49,7 @@ export default function DashboardPage() {
   const [showAddExercise, setShowAddExercise] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showGuidedWizard, setShowGuidedWizard] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -58,6 +72,28 @@ export default function DashboardPage() {
   }, [loadWorkoutsFromDatabase])
 
   if (!isClient) return null
+
+  // Show Welcome Screen for first-time users (no workouts and haven't completed onboarding)
+  if (!hasCompletedOnboarding && history.length === 0) {
+    return (
+      <>
+        <WelcomeScreen
+          onStartGuided={() => setShowGuidedWizard(true)}
+          onJumpIn={() => setPreferManualTracking(true)}
+        />
+        {showGuidedWizard && (
+          <GuidedPlanWizard
+            onComplete={async (input: GuidedPlanInput) => {
+              await createGuidedPlan(input)
+              setShowGuidedWizard(false)
+              router.refresh()
+            }}
+            onClose={() => setShowGuidedWizard(false)}
+          />
+        )}
+      </>
+    )
+  }
 
   const handleDelete = () => {
     if (selectedWorkout) {
@@ -196,6 +232,32 @@ export default function DashboardPage() {
           <span className="text-text-secondary ml-2 font-medium">workouts</span>
         </div>
       </section>
+
+      {/* Guided Plan Section */}
+      {currentPlan && !preferManualTracking && (
+        <section>
+          <GuidedPlanView
+            plan={currentPlan}
+            onStartWorkout={(dayIndex) => {
+              const day = currentPlan.weeklySchedule[dayIndex]
+              // Start workout with the plan's exercises
+              startWorkout(day.dayName)
+              
+              // Add all exercises from the plan
+              day.exercises.forEach((exercise) => {
+                addExercise({
+                  id: crypto.randomUUID(),
+                  name: exercise.name,
+                  bodyPart: undefined
+                })
+              })
+              
+              router.push('/log')
+            }}
+            onEditPlan={() => setShowGuidedWizard(true)}
+          />
+        </section>
+      )}
 
       {/* Weekly Summary */}
       <section>
@@ -1023,6 +1085,18 @@ export default function DashboardPage() {
 
       {/* Tutorial Modal */}
       <TutorialModal isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
+
+      {/* Guided Plan Wizard */}
+      {showGuidedWizard && (
+        <GuidedPlanWizard
+          onComplete={async (input: GuidedPlanInput) => {
+            await createGuidedPlan(input)
+            setShowGuidedWizard(false)
+            router.refresh()
+          }}
+          onClose={() => setShowGuidedWizard(false)}
+        />
+      )}
     </div>
   )
 }
