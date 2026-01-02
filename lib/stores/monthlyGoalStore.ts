@@ -56,6 +56,34 @@ export const useMonthlyGoalStore = create<MonthlyGoalState>()(
           }
           
           if (data) {
+            // Sync the completed count with actual workouts
+            const now = new Date()
+            const year = now.getFullYear()
+            const month = now.getMonth()
+            const startOfMonth = new Date(year, month, 1)
+            const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59)
+            
+            const { count } = await supabase
+              .from('workouts')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('is_completed', true)
+              .gte('workout_date', startOfMonth.toISOString().split('T')[0])
+              .lte('workout_date', endOfMonth.toISOString().split('T')[0])
+            
+            const actualCount = count || 0
+            
+            // If the count is different, update it
+            if (actualCount !== data.completed_workouts) {
+              console.log(`Syncing monthly goal: DB shows ${data.completed_workouts}, actual is ${actualCount}`)
+              await supabase
+                .from('monthly_goals')
+                .update({ completed_workouts: actualCount })
+                .eq('id', data.id)
+              
+              data.completed_workouts = actualCount
+            }
+            
             set({
               currentGoal: {
                 id: data.id,
@@ -85,14 +113,46 @@ export const useMonthlyGoalStore = create<MonthlyGoalState>()(
           
           const monthYear = getCurrentMonthYear()
           
-          // Upsert (insert or update)
+          // Get current month's start and end dates
+          const now = new Date()
+          const year = now.getFullYear()
+          const month = now.getMonth()
+          const startOfMonth = new Date(year, month, 1)
+          const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59)
+          
+          // Count workouts completed this month
+          const { data: workouts, error: workoutError } = await supabase
+            .from('workouts')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('is_completed', true)
+            .gte('workout_date', startOfMonth.toISOString().split('T')[0])
+            .lte('workout_date', endOfMonth.toISOString().split('T')[0])
+          
+          let completedCount = 0
+          if (!workoutError && workouts) {
+            // Get the count from the response
+            const { count } = await supabase
+              .from('workouts')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('is_completed', true)
+              .gte('workout_date', startOfMonth.toISOString().split('T')[0])
+              .lte('workout_date', endOfMonth.toISOString().split('T')[0])
+            
+            completedCount = count || 0
+          }
+          
+          console.log(`Setting goal for ${monthYear}: ${completedCount} workouts already completed this month`)
+          
+          // Upsert (insert or update) with actual completed count
           const { data, error } = await supabase
             .from('monthly_goals')
             .upsert({
               user_id: user.id,
               month_year: monthYear,
               goal_workouts: goalWorkouts,
-              completed_workouts: 0 // Reset to 0 when setting new goal
+              completed_workouts: completedCount
             }, {
               onConflict: 'user_id,month_year'
             })
