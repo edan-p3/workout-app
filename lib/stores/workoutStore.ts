@@ -269,7 +269,7 @@ export const useWorkoutStore = create<WorkoutState>()(
               workout_date: new Date(updatedWorkout.endTime).toISOString().split('T')[0],
               start_time: new Date(updatedWorkout.startTime).toISOString(),
               end_time: new Date(updatedWorkout.endTime).toISOString(),
-              duration_ms: updatedWorkout.durationMs,
+              // Note: duration_ms column doesn't exist in the workouts table
             })
             .eq('id', workoutId)
 
@@ -280,13 +280,11 @@ export const useWorkoutStore = create<WorkoutState>()(
 
           // Update exercises and sets
           for (const exercise of updatedWorkout.exercises) {
-            // Update exercise
+            // Update exercise name only (body_part and category don't exist in the exercises table)
             const { error: exerciseError } = await supabase
               .from('exercises')
               .update({
-                name: exercise.name,
-                body_part: exercise.bodyPart,
-                category: exercise.category,
+                exercise_name: exercise.name,
               })
               .eq('id', exercise.id)
 
@@ -302,10 +300,10 @@ export const useWorkoutStore = create<WorkoutState>()(
                 .update({
                   weight: set.weight || 0,
                   reps: set.reps || 0,
-                  duration: set.duration || 0,
-                  distance: set.distance || 0,
-                  calories: set.calories || 0,
-                  completed: set.completed,
+                  duration_minutes: set.duration || 0,
+                  distance_miles: set.distance || 0,
+                  calories_burned: set.calories || 0,
+                  is_completed: set.completed,
                 })
                 .eq('id', set.id)
 
