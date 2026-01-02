@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
-import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info, Edit, BookOpen, Save } from "lucide-react"
+import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info, Edit, BookOpen, Save, RotateCcw, XCircle, MoreVertical } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { useWeightStore } from "@/lib/stores/weightStore"
 import { useGuidedPlanStore } from "@/lib/stores/guidedPlanStore"
@@ -30,7 +30,9 @@ export default function DashboardPage() {
     preferManualTracking, 
     currentPlan,
     setPreferManualTracking,
-    createGuidedPlan 
+    createGuidedPlan,
+    cancelPlan,
+    restartPlan
   } = useGuidedPlanStore()
   
   const [isClient, setIsClient] = useState(false)
@@ -50,6 +52,9 @@ export default function DashboardPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showGuidedWizard, setShowGuidedWizard] = useState(false)
+  const [showPlanOptions, setShowPlanOptions] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -335,14 +340,34 @@ export default function DashboardPage() {
             </div>
             
             {currentPlan ? (
-              <Button 
-                onClick={() => setShowGuidedWizard(true)}
-                variant="outline"
-                className="w-full mt-3 border-purple-400/30 hover:border-purple-400 hover:bg-purple-400/10"
-              >
-                Edit Your Plan
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              <div className="space-y-2 mt-3">
+                <Button 
+                  onClick={() => setShowGuidedWizard(true)}
+                  variant="outline"
+                  className="w-full border-purple-400/30 hover:border-purple-400 hover:bg-purple-400/10"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Plan
+                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button 
+                    onClick={() => setShowRestartConfirm(true)}
+                    variant="outline"
+                    className="w-full border-blue-400/30 hover:border-blue-400 hover:bg-blue-400/10 text-blue-400"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Restart
+                  </Button>
+                  <Button 
+                    onClick={() => setShowCancelConfirm(true)}
+                    variant="outline"
+                    className="w-full border-error/30 hover:border-error hover:bg-error/10 text-error"
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
             ) : (
               <Button 
                 onClick={() => setShowGuidedWizard(true)}
@@ -1117,6 +1142,82 @@ export default function DashboardPage() {
             setShowGuidedWizard(false)
           }}
         />
+      )}
+
+      {/* Cancel Plan Confirmation */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <Card className="w-full max-w-sm p-6">
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-error/20 flex items-center justify-center mx-auto">
+                <XCircle className="w-6 h-6 text-error" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-1">Cancel Your Plan?</h3>
+                <p className="text-sm text-text-muted">
+                  This will permanently cancel your personalized training plan. You can create a new one anytime.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="flex-1"
+                >
+                  Keep Plan
+                </Button>
+                <Button 
+                  onClick={async () => {
+                    await cancelPlan()
+                    setShowCancelConfirm(false)
+                    router.refresh()
+                  }}
+                  className="flex-1 bg-error hover:bg-error/80"
+                >
+                  Cancel Plan
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Restart Plan Confirmation */}
+      {showRestartConfirm && (
+        <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <Card className="w-full max-w-sm p-6">
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-blue-400/20 flex items-center justify-center mx-auto">
+                <RotateCcw className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-1">Restart from Week 1?</h3>
+                <p className="text-sm text-text-muted">
+                  This will reset your plan back to Week 1 and clear all progress. Your workout history will remain intact.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setShowRestartConfirm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={async () => {
+                    await restartPlan()
+                    setShowRestartConfirm(false)
+                    router.refresh()
+                  }}
+                  className="flex-1 bg-blue-500 hover:bg-blue-500/80"
+                >
+                  Restart Plan
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   )

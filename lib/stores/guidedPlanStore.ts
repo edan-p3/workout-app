@@ -15,6 +15,8 @@ interface GuidedPlanState {
   loadGuidedPlan: () => Promise<void>
   markWorkoutComplete: (dayIndex: number) => void
   updateWeek: (week: number) => void
+  cancelPlan: () => Promise<void>
+  restartPlan: () => Promise<void>
 }
 
 export const useGuidedPlanStore = create<GuidedPlanState>()(
@@ -144,6 +146,79 @@ export const useGuidedPlanStore = create<GuidedPlanState>()(
             }
           }
         })
+      },
+      
+      cancelPlan: async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (!user) return
+          
+          const plan = get().currentPlan
+          if (!plan) return
+          
+          // Mark plan as inactive in database
+          const { error } = await supabase
+            .from('guided_plans')
+            .update({ is_active: false })
+            .eq('user_id', user.id)
+            .eq('id', plan.id)
+          
+          if (error) {
+            console.error('Error canceling plan:', error)
+            // Still clear locally even if database fails
+          }
+          
+          // Clear from local state
+          set({ 
+            currentPlan: null,
+            hasCompletedOnboarding: false,
+            preferManualTracking: false
+          })
+          
+          console.log('Plan canceled successfully')
+        } catch (error) {
+          console.error('Error in cancelPlan:', error)
+        }
+      },
+      
+      restartPlan: async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (!user) return
+          
+          const plan = get().currentPlan
+          if (!plan) return
+          
+          // Reset week to 1 in database
+          const { error } = await supabase
+            .from('guided_plans')
+            .update({ 
+              current_week: 1,
+              started_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id)
+            .eq('id', plan.id)
+          
+          if (error) {
+            console.error('Error restarting plan:', error)
+          }
+          
+          // Update local state
+          set(state => {
+            if (!state.currentPlan) return state
+            return {
+              currentPlan: {
+                ...state.currentPlan,
+                currentWeek: 1,
+                startedAt: new Date()
+              }
+            }
+          })
+          
+          console.log('Plan restarted from Week 1')
+        } catch (error) {
+          console.error('Error in restartPlan:', error)
+        }
       }
     }),
     {
