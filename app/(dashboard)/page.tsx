@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
-import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info } from "lucide-react"
+import { TrendingUp, Dumbbell, Calendar, Trophy, Plus, ArrowRight, HelpCircle, X, Clock, Timer, Trash2, Zap, Target, ChevronDown, ChevronUp, Info, Edit } from "lucide-react"
 import { useWorkoutStore } from "@/lib/stores/workoutStore"
 import { useWeightStore } from "@/lib/stores/weightStore"
 import { calculateVolume, calculateTotalDuration, calculateTotalDistance, calculateTotalCalories } from "@/lib/utils/calculations"
@@ -24,6 +24,8 @@ export default function DashboardPage() {
   const [showAllTemplates, setShowAllTemplates] = useState(false)
   const [expandedExercise, setExpandedExercise] = useState<number | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState<WorkoutTemplate['difficulty'] | null>(null)
+  const [isEditingWorkout, setIsEditingWorkout] = useState(false)
+  const [editWorkoutDate, setEditWorkoutDate] = useState('')
 
   useEffect(() => {
     setIsClient(true)
@@ -370,16 +372,54 @@ export default function DashboardPage() {
           <Card className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl">
             <div className="sticky top-0 bg-bg-card backdrop-blur-sm p-4 border-b border-white/10 z-10">
               <div className="flex items-center justify-between mb-2">
-                <div>
+                <div className="flex-1">
                   <h2 className="text-xl font-bold text-white">{selectedWorkout.name}</h2>
-                  <p className="text-sm text-text-muted flex items-center gap-2">
+                  <div className="text-sm text-text-muted flex items-center gap-2 mt-1">
                     <Calendar className="w-3 h-3" />
-                    {new Date(selectedWorkout.endTime).toLocaleDateString()}
+                    {isEditingWorkout ? (
+                      <input
+                        type="date"
+                        value={editWorkoutDate}
+                        onChange={(e) => setEditWorkoutDate(e.target.value)}
+                        className="bg-white/10 border border-white/20 rounded px-2 py-0.5 text-white text-xs"
+                      />
+                    ) : (
+                      <span>{new Date(selectedWorkout.endTime).toLocaleDateString()}</span>
+                    )}
                     <Clock className="w-3 h-3 ml-2" />
                     {Math.round(selectedWorkout.durationMs / 1000 / 60)}m
-                  </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  {isEditingWorkout ? (
+                    <button 
+                      onClick={async () => {
+                        // Save the edited workout date
+                        const updatedWorkout = {
+                          ...selectedWorkout,
+                          endTime: new Date(editWorkoutDate + 'T' + new Date(selectedWorkout.endTime).toTimeString().split(' ')[0]),
+                          startTime: new Date(editWorkoutDate + 'T' + new Date(selectedWorkout.startTime).toTimeString().split(' ')[0])
+                        }
+                        await useWorkoutStore.getState().updateWorkoutInHistory(updatedWorkout)
+                        setSelectedWorkout(updatedWorkout)
+                        setIsEditingWorkout(false)
+                      }}
+                      className="px-3 py-1.5 bg-primary hover:bg-primary/80 text-white rounded-lg transition-colors text-sm font-medium"
+                    >
+                      Save
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => {
+                        setIsEditingWorkout(true)
+                        setEditWorkoutDate(new Date(selectedWorkout.endTime).toISOString().split('T')[0])
+                      }}
+                      className="p-2 hover:bg-primary/20 text-primary rounded-lg transition-colors"
+                      aria-label="Edit workout"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </button>
+                  )}
                   <button 
                     onClick={() => setShowDeleteConfirm(true)} 
                     className="p-2 hover:bg-error/20 text-error rounded-lg transition-colors"
@@ -387,7 +427,13 @@ export default function DashboardPage() {
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
-                  <button onClick={() => setSelectedWorkout(null)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                  <button 
+                    onClick={() => {
+                      setSelectedWorkout(null)
+                      setIsEditingWorkout(false)
+                    }} 
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  >
                     <X className="w-6 h-6 text-text-muted hover:text-white" />
                   </button>
                 </div>
