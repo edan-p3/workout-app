@@ -432,7 +432,7 @@ export default function DashboardPage() {
                           e.preventDefault()
                           e.stopPropagation()
                           
-                          console.log('Save button clicked!')
+                          console.log('=== SAVE WORKOUT STARTED ===')
                           
                           if (!editedWorkout) {
                             console.error('No editedWorkout')
@@ -443,7 +443,9 @@ export default function DashboardPage() {
                           setIsSaving(true)
                           
                           try {
-                            console.log('Updating workout with date:', editWorkoutDate)
+                            console.log('Original workout ID:', selectedWorkout.id)
+                            console.log('Original date:', new Date(selectedWorkout.endTime).toISOString())
+                            console.log('New date:', editWorkoutDate)
                             
                             // Create updated workout with new date
                             const updatedWorkout = {
@@ -452,15 +454,24 @@ export default function DashboardPage() {
                               startTime: new Date(editWorkoutDate + 'T' + new Date(editedWorkout.startTime).toTimeString().split(' ')[0])
                             }
                             
+                            console.log('Updated endTime:', updatedWorkout.endTime.toISOString())
+                            console.log('Updated startTime:', updatedWorkout.startTime.toISOString())
+                            
                             console.log('Calling updateHistoryWorkout...')
                             await useWorkoutStore.getState().updateHistoryWorkout(selectedWorkout.id, updatedWorkout)
                             
-                            console.log('Update successful! Reloading workouts from database...')
+                            console.log('Database update complete. Waiting 500ms for propagation...')
+                            await new Promise(resolve => setTimeout(resolve, 500))
                             
-                            // Reload workouts from database to get proper chronological order
+                            console.log('Reloading workouts from database...')
                             await loadWorkoutsFromDatabase()
                             
-                            console.log('Reload complete! Closing modal...')
+                            console.log('Current history after reload:', useWorkoutStore.getState().history.slice(0, 5).map(w => ({
+                              name: w.name,
+                              date: new Date(w.endTime).toLocaleDateString()
+                            })))
+                            
+                            console.log('=== SAVE COMPLETE, CLOSING MODAL ===')
                             
                             // Close modal after reload is complete
                             setSelectedWorkout(null)
