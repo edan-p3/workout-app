@@ -91,7 +91,7 @@ export function MonthlyGoalCard() {
                         className="fixed inset-0 z-10" 
                         onClick={() => setShowTooltip(false)}
                       />
-                      <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-white rounded-xl shadow-2xl z-20 text-left">
+                      <div className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-2rem)] p-3 bg-white rounded-xl shadow-2xl z-20 text-left">
                         <p className="text-xs text-primary font-medium leading-relaxed">
                           Set a monthly goal to track workouts completed in <span className="font-bold">{monthName}</span> (from the 1st to the last day). Your progress updates automatically each time you finish a workout.
                         </p>
@@ -193,7 +193,7 @@ export function MonthlyGoalCard() {
                         className="fixed inset-0 z-10" 
                         onClick={() => setShowTooltip(false)}
                       />
-                      <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-white rounded-xl shadow-2xl z-20 text-left">
+                      <div className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-2rem)] p-3 bg-white rounded-xl shadow-2xl z-20 text-left">
                         <p className="text-xs text-primary font-medium leading-relaxed">
                           Your monthly goal tracks workouts completed in <span className="font-bold">{monthName}</span> (from the 1st to the last day). The "Weekly Activity" above shows your last 7 days, which may include workouts from the previous month.
                         </p>
